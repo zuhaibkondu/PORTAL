@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Azees Travels — B2B Itinerary Builder</title>
+<style>
+  :root {
+    --brand-magenta: #7c236a;
+    --brand-magenta-dark: #5a1850;
+    --brand-magenta-light: #f5e8f1;
+    --brand-gold: #ba9c62;
+    --brand-gold-dark: #8e7547;
+    --brand-gold-light: #faf4e8;
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --ink-muted: #888;
+    --line: #e8e3da;
+    --bg: #faf8f5;
+    --white: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    font-size: 14px;
+  }
+
+  /* ============ TOP NAV ============ */
+  .topnav {
+    background: var(--ink);
+    color: white;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--brand-gold);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nav-logo {
+    width: 38px; height: 38px;
+    background: var(--brand-gold);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 300;
+  }
+  .nav-title {
+    font-size: 11px;
+    letter-spacing: 4px;
+    font-weight: 600;
+  }
+  .nav-sub {
+    font-size: 8.5px;
+    letter-spacing: 2.5px;
+    color: var(--brand-gold);
+    margin-top: 2px;
+  }
+  .nav-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .nav-btn {
+    background: transparent;
+    color: white;
+    border: 1px solid #444;
+    padding: 7px 14px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .nav-btn:hover {
+    background: var(--brand-magenta);
+    border-color: var(--brand-magenta);
+  }
+  .nav-btn.primary {
+    background: var(--brand-magenta);
+    border-color: var(--brand-magenta);
+  }
+  .nav-btn.primary:hover {
+    background: var(--brand-magenta-dark);
+  }
+  .nav-btn.gold {
+    background: var(--brand-gold);
+    color: var(--ink);
+    border-color: var(--brand-gold);
+  }
+  .nav-btn.gold:hover {
+    background: var(--brand-gold-dark);
+    color: white;
+  }
+
+  /* ============ LAYOUT ============ */
+  .app {
+    display: grid;
+    grid-template-columns: 320px 1fr 460px;
+    height: calc(100vh - 65px);
+    overflow: hidden;
+  }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar {
+    background: white;
+    border-right: 1px solid var(--line);
+    overflow-y: auto;
+    padding: 20px 18px;
+  }
+  .sidebar h3 {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    color: var(--brand-magenta);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--brand-gold);
+  }
+  .saved-list {
+    list-style: none;
+    margin-bottom: 24px;
+  }
+  .saved-item {
+    background: var(--bg);
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border-left: 3px solid var(--brand-gold);
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .saved-item:hover {
+    background: var(--brand-magenta-light);
+    border-left-color: var(--brand-magenta);
+  }
+  .saved-item-title {
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 3px;
+    padding-right: 22px;
+  }
+  .saved-item-meta {
+    color: var(--ink-muted);
+    font-size: 10.5px;
+    letter-spacing: 0.5px;
+  }
+  .saved-item-delete {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: transparent;
+    border: none;
+    color: var(--ink-muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 6px;
+    line-height: 1;
+  }
+  .saved-item-delete:hover {
+    color: var(--brand-magenta);
+  }
+  .saved-empty {
+    font-size: 11px;
+    color: var(--ink-muted);
+    font-style: italic;
+    padding: 8px 0;
+  }
+  .new-btn {
+    width: 100%;
+    background: var(--brand-magenta);
+    color: white;
+    border: none;
+    padding: 11px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-family: inherit;
+    transition: background 0.2s;
+    margin-bottom: 24px;
+  }
+  .new-btn:hover { background: var(--brand-magenta-dark); }
+
+  .quick-templates {
+    margin-top: 6px;
+  }
+  .template-btn {
+    width: 100%;
+    background: var(--brand-gold-light);
+    color: var(--ink);
+    border: 1px solid var(--brand-gold);
+    padding: 9px 11px;
+    font-size: 11px;
+    cursor: pointer;
+    text-align: left;
+    margin-bottom: 5px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .template-btn:hover {
+    background: var(--brand-gold);
+    color: var(--ink);
+  }
+  .template-btn strong {
+    display: block;
+    font-size: 11.5px;
+    margin-bottom: 1px;
+  }
+  .template-btn span {
+    font-size: 10px;
+    color: var(--ink-muted);
+    letter-spacing: 1px;
+  }
+
+  /* ============ BUILDER (MAIN) ============ */
+  .builder {
+    overflow-y: auto;
+    padding: 24px 28px;
+    background: var(--bg);
+  }
+  .builder-header {
+    background: linear-gradient(135deg, var(--brand-magenta) 0%, var(--brand-magenta-dark) 100%);
+    color: white;
+    padding: 18px 22px;
+    margin-bottom: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .builder-header::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 0 50px 50px 0;
+    border-color: transparent var(--brand-gold) transparent transparent;
+  }
+  .builder-header h1 {
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: 1.5px;
+    margin-bottom: 3px;
+  }
+  .builder-header p {
+    font-size: 10.5px;
+    letter-spacing: 2px;
+    color: var(--brand-gold);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .section {
+    background: white;
+    margin-bottom: 14px;
+    border: 1px solid var(--line);
+  }
+  .section-head {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--line);
+    background: var(--brand-magenta-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .section-head h2 {
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    color: var(--brand-magenta);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .section-head .badge {
+    background: var(--brand-magenta);
+    color: white;
+    font-size: 10px;
+    padding: 3px 8px;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .section-body {
+    padding: 16px 18px;
+  }
+
+  /* Form fields */
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .row.row-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .row.row-1 { grid-template-columns: 1fr; }
+  .field {
+    display: flex;
+    flex-direction: column;
+  }
+  .field label {
+    font-size: 9.5px;
+    letter-spacing: 1.8px;
+    color: var(--brand-gold-dark);
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+  .field input, .field textarea, .field select {
+    border: 1px solid var(--line);
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    background: white;
+    color: var(--ink);
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    outline: none;
+    border-color: var(--brand-magenta);
+  }
+  .field textarea {
+    resize: vertical;
+    min-height: 70px;
+    line-height: 1.5;
+  }
+
+  /* Day blocks */
+  .day-card {
+    background: white;
+    border: 1px solid var(--line);
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .day-card-head {
+    background: var(--ink);
+    color: white;
+    padding: 9px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .day-card-num {
+    background: var(--brand-gold);
+    color: var(--ink);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .day-card-title {
+    flex: 1;
+    margin: 0 12px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  .day-card-actions {
+    display: flex;
+    gap: 4px;
+  }
+  .icon-btn {
+    background: transparent;
+    color: white;
+    border: 1px solid #555;
+    padding: 4px 9px;
+    cursor: pointer;
+    font-size: 10px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .icon-btn:hover {
+    background: var(--brand-magenta);
+    border-color: var(--brand-magenta);
+  }
+  .icon-btn.danger:hover {
+    background: #c0392b;
+    border-color: #c0392b;
+  }
+  .day-card-body {
+    padding: 14px;
+  }
+  .add-day {
+    width: 100%;
+    background: var(--brand-gold);
+    color: var(--ink);
+    border: none;
+    padding: 12px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-family: inherit;
+    margin-top: 4px;
+    transition: background 0.2s;
+  }
+  .add-day:hover { background: var(--brand-gold-dark); color: white; }
+
+  /* Pricing table inputs */
+  .price-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+  }
+  .price-table th, .price-table td {
+    border: 1px solid var(--line);
+    padding: 6px 8px;
+    font-size: 11.5px;
+  }
+  .price-table th {
+    background: var(--ink);
+    color: var(--brand-gold);
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .price-table td.label {
+    background: var(--bg);
+    font-weight: 500;
+  }
+  .price-table input {
+    width: 100%;
+    border: none;
+    padding: 5px;
+    font-size: 12px;
+    text-align: center;
+    background: transparent;
+    font-family: inherit;
+    color: var(--ink);
+  }
+  .price-table input:focus {
+    outline: 1px solid var(--brand-magenta);
+    background: var(--brand-magenta-light);
+  }
+
+  /* ============ PREVIEW PANEL ============ */
+  .preview {
+    background: #2a2a2a;
+    color: #e8e8e8;
+    overflow-y: auto;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+  }
+  .preview-tabs {
+    display: flex;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #444;
+  }
+  .preview-tab {
+    background: transparent;
+    color: #aaa;
+    border: none;
+    padding: 9px 14px;
+    font-size: 10px;
+    letter-spacing: 1.8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-family: inherit;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .preview-tab.active {
+    color: var(--brand-gold);
+    border-bottom-color: var(--brand-gold);
+  }
+  .preview-tab:hover { color: white; }
+
+  .preview-content {
+    flex: 1;
+    background: white;
+    color: var(--ink);
+    padding: 24px;
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .preview-content.email-mode {
+    background: white;
+    padding: 0;
+  }
+  .preview-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .copy-btn {
+    background: var(--brand-gold);
+    color: var(--ink);
+    border: none;
+    padding: 12px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .copy-btn:hover { background: var(--brand-gold-dark); color: white; }
+  .copy-btn.magenta {
+    background: var(--brand-magenta);
+    color: white;
+  }
+  .copy-btn.magenta:hover { background: var(--brand-magenta-dark); }
+  .copy-feedback {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--brand-magenta);
+    color: white;
+    padding: 12px 24px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 1000;
+    pointer-events: none;
+  }
+  .copy-feedback.show { opacity: 1; }
+
+  /* ============ FORMATTED EMAIL OUTPUT ============ */
+  .email-output {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #2a2a2a;
+    background: white;
+    padding: 32px 28px;
+  }
+  .email-output h2.brand {
+    color: var(--brand-magenta);
+    font-size: 18px;
+    letter-spacing: 4px;
+    font-weight: 300;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+  .email-output .brand-sub {
+    color: var(--brand-gold);
+    font-size: 9px;
+    letter-spacing: 3px;
+    font-weight: 600;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--brand-gold);
+    padding-bottom: 12px;
+  }
+  .email-output h3 {
+    color: var(--brand-magenta);
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-top: 22px;
+    margin-bottom: 10px;
+    border-left: 3px solid var(--brand-gold);
+    padding-left: 10px;
+  }
+  .email-output .greeting {
+    margin-bottom: 14px;
+    color: var(--ink-soft);
+  }
+  .email-output .meta-block {
+    background: var(--bg);
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    border-left: 3px solid var(--brand-magenta);
+    font-size: 12px;
+  }
+  .email-output .meta-block strong {
+    color: var(--brand-magenta);
+    letter-spacing: 1px;
+  }
+  .email-output .day {
+    background: var(--bg);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border-left: 3px solid var(--brand-gold);
+  }
+  .email-output .day-num {
+    background: var(--brand-magenta);
+    color: white;
+    display: inline-block;
+    padding: 2px 9px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+  .email-output .day-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 5px;
+  }
+  .email-output .day-desc {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+  .email-output .day-meta {
+    font-size: 10.5px;
+    color: var(--ink-muted);
+    margin-top: 5px;
+    letter-spacing: 0.5px;
+  }
+  .email-output .day-meta strong { color: var(--brand-gold-dark); }
+  .email-output table.price {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6px;
+    font-size: 11.5px;
+  }
+  .email-output table.price th {
+    background: var(--brand-magenta);
+    color: white;
+    padding: 7px 8px;
+    font-size: 10px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    border: 1px solid var(--brand-magenta-dark);
+  }
+  .email-output table.price td {
+    padding: 6px 8px;
+    border: 1px solid var(--line);
+    text-align: center;
+  }
+  .email-output table.price td.label {
+    text-align: left;
+    background: var(--brand-gold-light);
+    font-weight: 600;
+  }
+  .email-output .inc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 6px;
+  }
+  .email-output .inc-grid ul {
+    list-style: none;
+    padding: 0;
+  }
+  .email-output .inc-grid li {
+    padding: 3px 0 3px 16px;
+    font-size: 11.5px;
+    position: relative;
+    color: var(--ink-soft);
+  }
+  .email-output .inc-grid li.yes::before {
+    content: '✓';
+    color: var(--brand-magenta);
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+  }
+  .email-output .inc-grid li.no::before {
+    content: '✕';
+    color: #c0392b;
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+  }
+  .email-output .signature {
+    margin-top: 24px;
+    padding-top: 14px;
+    border-top: 2px solid var(--brand-gold);
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+  }
+  .email-output .signature strong {
+    color: var(--brand-magenta);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+  .email-output .signature .gold {
+    color: var(--brand-gold-dark);
+    font-weight: 600;
+  }
+
+  /* Plain text view */
+  .plain-output {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    background: var(--bg);
+    padding: 18px;
+    white-space: pre-wrap;
+    color: var(--ink-soft);
+    border: 1px dashed var(--line);
+  }
+
+  /* Scrollbar polish */
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--brand-gold);
+    border-radius: 0;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--brand-magenta); }
+
+  /* Loading state */
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--ink-muted);
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ TOP NAV ============ -->
+<nav class="topnav">
+  <div class="nav-brand">
+    <div class="nav-logo">A</div>
+    <div>
+      <div class="nav-title">AZEES TRAVELS</div>
+      <div class="nav-sub">B2B Itinerary Builder · Trade Partner Portal</div>
+    </div>
+  </div>
+  <div class="nav-actions">
+    <button class="nav-btn gold" id="btn-save">💾 Save</button>
+    <button class="nav-btn" id="btn-export-pdf">📄 PDF</button>
+    <button class="nav-btn" id="btn-export-word">📝 Word</button>
+    <button class="nav-btn primary" id="btn-export">↓ HTML</button>
+    <button class="nav-btn" id="btn-clear">⟲ Reset</button>
+  </div>
+</nav>
+
+<!-- ============ APP LAYOUT ============ -->
+<div class="app">
+
+  <!-- ===== SIDEBAR: Saved itineraries + templates ===== -->
+  <aside class="sidebar">
+    <button class="new-btn" id="btn-new">+ New Itinerary</button>
+
+    <h3>📋 Quick Templates</h3>
+    <div class="quick-templates" id="template-list"></div>
+
+    <h3 style="margin-top: 22px;">💼 Saved Itineraries</h3>
+    <ul class="saved-list" id="saved-list">
+      <li class="saved-empty">Loading...</li>
+    </ul>
+  </aside>
+
+  <!-- ===== BUILDER ===== -->
+  <main class="builder" id="builder">
+    <div class="loading">Initializing builder...</div>
+  </main>
+
+  <!-- ===== PREVIEW PANEL ===== -->
+  <aside class="preview">
+    <div class="preview-tabs">
+      <button class="preview-tab active" data-mode="email">📧 Email HTML</button>
+      <button class="preview-tab" data-mode="plain">📄 Plain Text</button>
+    </div>
+    <div class="preview-content email-mode" id="preview-content">
+      <div class="loading">Live preview will appear here...</div>
+    </div>
+    <div class="preview-actions">
+      <button class="copy-btn magenta" id="btn-copy-rich">⎘ Copy Rich Email</button>
+      <button class="copy-btn" id="btn-copy-plain">⎘ Copy Plain Text</button>
+    </div>
+  </aside>
+
+</div>
+
+<div class="copy-feedback" id="copy-feedback">✓ Copied to clipboard</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+'use strict';
+
+/* ================================================================
+   DATA MODEL & STATE
+================================================================ */
+const STORAGE_PREFIX = 'azees_itin:';
+let state = createBlankItinerary();
+let activeItineraryId = null;
+let previewMode = 'email';
+
+function createBlankItinerary() {
+  return {
+    id: 'itin_' + Date.now(),
+    title: 'Untitled Kashmir Itinerary',
+    agency: '',
+    contact: '',
+    quoteNo: 'AZ-B2B-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000),
+    issueDate: new Date().toISOString().split('T')[0],
+    validity: '',
+    destination: 'Kashmir',
+    nights: 5,
+    days: 6,
+    routeSummary: '',
+    category: 'Deluxe (4★)',
+    daysList: [
+      { route: 'Arrival · Srinagar', title: 'Welcome to the Valley', stay: 'Srinagar Houseboat', desc: 'Arrival at Srinagar Airport, welcome Kahwa, transfer to deluxe houseboat. Evening shikara ride on Dal Lake.', meals: 'Welcome Kahwa · Lunch · Dinner' }
+    ],
+    hotels: [
+      { city: 'Srinagar', nights: '2 Nights · Houseboat', star3: 'Young Bombay Heritage', star4: 'Wangnoo Heritage', star5: 'Sukoon Houseboat' }
+    ],
+    pricing: {
+      pax: '',
+      rooms: '',
+      total: ''
+    },
+    inclusions: [
+      'Accommodation on DBL occupancy as per selected category',
+      'Daily breakfast & dinner at hotels (MAP plan)',
+      'Private AC vehicle for all transfers & sightseeing',
+      'Welcome Kahwa on arrival',
+      'One shikara ride on Dal Lake (1 hour)',
+      'All toll, parking & driver allowances',
+      'Dedicated tour coordinator & 24/7 support'
+    ],
+    exclusions: [
+      'Airfare / train tickets to & from Srinagar',
+      'Gondola Cable Car tickets (Phase I & II)',
+      'Pony rides & Union taxi charges',
+      'Lunches not specified above',
+      'Personal expenses, tips, laundry',
+      'Travel insurance'
+    ],
+    notes: ''
+  };
+}
+
+/* ================================================================
+   TEMPLATES (quick-start packages)
+================================================================ */
+const TEMPLATES = [
+  {
+    name: 'Kashmir Classic 5N/6D',
+    sub: 'Srinagar · Gulmarg · Pahalgam',
+    apply: (s) => {
+      s.title = 'Kashmir Classic 5N/6D';
+      s.destination = 'Kashmir';
+      s.nights = 5; s.days = 6;
+      s.routeSummary = 'Srinagar · Gulmarg · Pahalgam';
+      s.daysList = [
+        { route: 'Arrival · Srinagar', title: 'Welcome to the Valley', stay: 'Srinagar Houseboat', desc: 'Arrival at Srinagar Airport, welcome Kahwa, transfer to deluxe houseboat. Evening shikara ride on Dal Lake exploring floating gardens.', meals: 'Welcome Kahwa · Lunch · Dinner' },
+        { route: 'Srinagar · Mughal Gardens', title: 'Heritage & Royal Gardens', stay: 'Srinagar Houseboat', desc: 'Full-day sightseeing — Nishat Bagh, Shalimar Bagh, Chashme Shahi, Pari Mahal. Optional Hazratbal Shrine visit.', meals: 'Breakfast · Dinner' },
+        { route: 'Srinagar → Gulmarg', title: 'Meadow of Flowers', stay: 'Gulmarg Hotel', desc: 'Drive to Gulmarg (2 hrs). Gondola Cable Car ride to Kongdoori & optional Apharwat Peak (additional cost).', meals: 'Breakfast · Dinner' },
+        { route: 'Gulmarg → Pahalgam', title: 'Saffron Fields & Valley of Shepherds', stay: 'Pahalgam Hotel', desc: 'Drive to Pahalgam (4-5 hrs) via Pampore saffron fields. Evening at leisure along Lidder River.', meals: 'Breakfast · Dinner' },
+        { route: 'Pahalgam Local', title: 'Aru & Betaab Valley', stay: 'Pahalgam Hotel', desc: 'Full-day local sightseeing by Union taxi. Visit Aru Valley, Betaab Valley & optionally Chandanwari.', meals: 'Breakfast · Dinner' },
+        { route: 'Departure · Srinagar Airport', title: 'Farewell to Paradise', stay: 'Tour Ends', desc: 'Drive back to Srinagar Airport (3 hrs). Last-minute shopping en-route. Onward journey.', meals: 'Breakfast · Packed Snack' }
+      ];
+      s.hotels = [
+        { city: 'Srinagar', nights: '2 Nights · Houseboat', star3: 'Young Bombay Heritage', star4: 'Wangnoo Heritage', star5: 'Sukoon Houseboat' },
+        { city: 'Gulmarg', nights: '1 Night', star3: 'Hotel Pine Spring', star4: 'Hotel Hilltop', star5: 'Khyber Himalayan Resort' },
+        { city: 'Pahalgam', nights: '2 Nights', star3: 'Hilltop Pahalgam', star4: 'Pahalgam Hotel', star5: 'Chinar Resort & Spa' }
+      ];
+    }
+  },
+  {
+    name: 'Honeymoon Special 4N/5D',
+    sub: 'Romantic Kashmir Escape',
+    apply: (s) => {
+      s.title = 'Kashmir Honeymoon 4N/5D';
+      s.destination = 'Kashmir';
+      s.nights = 4; s.days = 5;
+      s.routeSummary = 'Srinagar · Gulmarg · Pahalgam';
+      s.category = 'Premium (5★)';
+      s.daysList = [
+        { route: 'Arrival · Srinagar', title: 'Romantic Welcome', stay: 'Luxury Houseboat', desc: 'Airport pickup with rose welcome. Transfer to premium houseboat with private shikara. Candlelight dinner on the lake.', meals: 'Welcome Kahwa · Romantic Dinner' },
+        { route: 'Srinagar → Gulmarg', title: 'Snow Meadow Romance', stay: 'Luxury Resort Gulmarg', desc: 'Drive to Gulmarg. Couples gondola ride. Evening fireside dinner at luxury resort.', meals: 'Breakfast · Candlelight Dinner' },
+        { route: 'Gulmarg → Pahalgam', title: 'Riverside Retreat', stay: 'Premium Pahalgam', desc: 'Scenic drive through saffron country. Evening couples spa session (additional). Riverside walk.', meals: 'Breakfast · Dinner' },
+        { route: 'Pahalgam Local', title: 'Valleys of Love', stay: 'Premium Pahalgam', desc: 'Private taxi to Aru & Betaab Valley. Couples pony ride. Photography session in alpine meadows.', meals: 'Breakfast · Dinner' },
+        { route: 'Departure', title: 'Until We Meet Again', stay: 'Tour Ends', desc: 'Leisurely breakfast. Drive to Srinagar Airport. Departure with a complimentary memento.', meals: 'Breakfast' }
+      ];
+      s.hotels = [
+        { city: 'Srinagar', nights: '1 Night · Luxury Houseboat', star3: '—', star4: 'Wangnoo Premium', star5: 'Sukoon Luxury Suite' },
+        { city: 'Gulmarg', nights: '1 Night', star3: '—', star4: 'Hilltop Premium', star5: 'Khyber Himalayan' },
+        { city: 'Pahalgam', nights: '2 Nights', star3: '—', star4: 'Pahalgam Hotel Premium', star5: 'Chinar Resort Honeymoon Suite' }
+      ];
+    }
+  },
+  {
+    name: 'Kashmir + Ladakh 17N/18D',
+    sub: 'Grand Himalayan Expedition',
+    apply: (s) => {
+      s.title = 'Kashmir + Ladakh Grand 17N/18D';
+      s.destination = 'Kashmir + Ladakh';
+      s.nights = 17; s.days = 18;
+      s.routeSummary = 'Srinagar · Sonamarg · Kargil · Leh · Nubra · Pangong · Tso Moriri · Pahalgam · Gulmarg';
+      const days = [
+        ['Arrive Srinagar', 'Welcome to the Valley', 'Srinagar Houseboat', 'Airport pickup. Welcome Kahwa. Shikara on Dal Lake.', 'Welcome Kahwa · Lunch · Dinner'],
+        ['Srinagar Local', 'Mughal Gardens Heritage', 'Srinagar Houseboat', 'Nishat, Shalimar, Chashme Shahi, Pari Mahal & Old City.', 'Breakfast · Dinner'],
+        ['Srinagar → Sonamarg', 'Meadow of Gold', 'Sonamarg Hotel', 'Drive 80km. Optional Thajiwas Glacier pony ride.', 'Breakfast · Dinner'],
+        ['Sonamarg → Kargil', 'Across Zoji La Pass', 'Kargil Hotel', 'Cross Zoji La (11,575 ft). Drass War Memorial visit.', 'Breakfast · Dinner'],
+        ['Kargil → Leh', 'Indus Valley Drive', 'Leh Hotel', 'Lamayuru, Magnetic Hill, Confluence. Arrive Leh for acclimatisation.', 'Breakfast · Dinner'],
+        ['Leh Acclimatisation', 'Rest & Local Tour', 'Leh Hotel', 'Mandatory acclimatisation. Shanti Stupa, Leh Palace, bazaar.', 'Breakfast · Dinner'],
+        ['Leh → Nubra Valley', 'Khardung La & Sand Dunes', 'Nubra Camp', 'Cross Khardung La (18,380 ft). Diskit Monastery. Hunder camel ride.', 'Breakfast · Dinner'],
+        ['Nubra → Pangong', 'Lake at the Edge of Tibet', 'Pangong Camp', 'Direct Shyok route. Sunset at Pangong Tso.', 'Breakfast · Dinner'],
+        ['Pangong → Leh', 'Chang La Return', 'Leh Hotel', 'Cross Chang La (17,590 ft). Thiksey & Hemis Monasteries.', 'Breakfast · Dinner'],
+        ['Sham Valley Tour', 'Ancient Monasteries', 'Leh Hotel', 'Alchi, Likir, Basgo, Hall of Fame.', 'Breakfast · Dinner'],
+        ['Leh → Tso Moriri', 'Remote Lake Country', 'Tso Moriri Camp', 'Cross Tanglang La. Visit Tso Kar en-route. Korzok village.', 'Breakfast · Dinner'],
+        ['Tso Moriri → Leh', 'Return Drive', 'Leh Hotel', 'Visit Korzok Monastery. Return to Leh for shopping.', 'Breakfast · Dinner'],
+        ['Leh → Srinagar', 'Flight or Drive Option', 'Srinagar Hotel', 'Morning flight to Srinagar (1 hr). Check into hotel.', 'Breakfast · Dinner'],
+        ['Srinagar → Pahalgam', 'Valley of Shepherds', 'Pahalgam Hotel', 'Drive via Pampore saffron fields. Evening river walk.', 'Breakfast · Dinner'],
+        ['Pahalgam Local', 'Alpine Valleys', 'Pahalgam Hotel', 'Aru, Betaab, Chandanwari by Union taxi.', 'Breakfast · Dinner'],
+        ['Pahalgam → Gulmarg', 'Meadow of Flowers', 'Gulmarg Hotel', 'Drive to Gulmarg. Evening meadow walk.', 'Breakfast · Dinner'],
+        ['Gulmarg Local', 'Gondola Heights', 'Gulmarg Hotel', 'Gondola Phase I & II. Apharwat Peak views.', 'Breakfast · Dinner'],
+        ['Departure', 'Farewell Himalayas', 'Tour Ends', 'Drive to Srinagar Airport. Onward journey.', 'Breakfast']
+      ];
+      s.daysList = days.map(d => ({ route: d[0], title: d[1], stay: d[2], desc: d[3], meals: d[4] }));
+      s.hotels = [
+        { city: 'Srinagar', nights: '3 Nights', star3: 'Young Bombay Group', star4: 'Wangnoo Heritage', star5: 'Sukoon Houseboat' },
+        { city: 'Leh', nights: '6 Nights', star3: 'Hotel Lasermo', star4: 'Grand Dragon Ladakh', star5: 'Stok Palace' },
+        { city: 'Pahalgam + Gulmarg', nights: '4 Nights', star3: 'Hilltop / Pine Spring', star4: 'Pahalgam Hotel · Hilltop Gulmarg', star5: 'Chinar Resort · Khyber Himalayan' }
+      ];
+    }
+  }
+];
+
+/* ================================================================
+   STORAGE
+================================================================ */
+async function loadSavedList() {
+  try {
+    const result = await window.storage.list(STORAGE_PREFIX);
+    return result?.keys || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+async function loadItinerary(key) {
+  try {
+    const result = await window.storage.get(key);
+    return result ? JSON.parse(result.value) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function saveItinerary(itin) {
+  const key = STORAGE_PREFIX + itin.id;
+  try {
+    await window.storage.set(key, JSON.stringify(itin));
+    return true;
+  } catch (e) {
+    alert('Could not save: ' + e.message);
+    return false;
+  }
+}
+
+async function deleteItinerary(key) {
+  try {
+    await window.storage.delete(key);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+/* ================================================================
+   UI RENDERING
+================================================================ */
+function renderBuilder() {
+  const el = document.getElementById('builder');
+  const s = state;
+
+  el.innerHTML = `
+    <div class="builder-header">
+      <h1>${escapeHtml(s.title || 'Untitled Itinerary')}</h1>
+      <p>${escapeHtml(s.nights)} Nights · ${escapeHtml(s.days)} Days · ${escapeHtml(s.destination)}</p>
+    </div>
+
+    <!-- ===== CLIENT/AGENCY INFO ===== -->
+    <div class="section">
+      <div class="section-head"><h2>① Agency & Quote Details</h2></div>
+      <div class="section-body">
+        <div class="row">
+          <div class="field"><label>Agency / Partner Name</label><input id="f-agency" value="${escapeAttr(s.agency)}" placeholder="e.g. Sharma Travels Pvt Ltd"/></div>
+          <div class="field"><label>Contact Person</label><input id="f-contact" value="${escapeAttr(s.contact)}" placeholder="e.g. Mr. Rajesh Sharma"/></div>
+        </div>
+        <div class="row row-3">
+          <div class="field"><label>Quote Number</label><input id="f-quoteNo" value="${escapeAttr(s.quoteNo)}"/></div>
+          <div class="field"><label>Issue Date</label><input id="f-issueDate" type="date" value="${escapeAttr(s.issueDate)}"/></div>
+          <div class="field"><label>Valid Till</label><input id="f-validity" type="date" value="${escapeAttr(s.validity)}"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TOUR DETAILS ===== -->
+    <div class="section">
+      <div class="section-head"><h2>② Tour Details</h2></div>
+      <div class="section-body">
+        <div class="row row-1">
+          <div class="field"><label>Package Title (shown on cover)</label><input id="f-title" value="${escapeAttr(s.title)}"/></div>
+        </div>
+        <div class="row row-3">
+          <div class="field"><label>Destination</label><input id="f-destination" value="${escapeAttr(s.destination)}"/></div>
+          <div class="field"><label>Nights</label><input id="f-nights" type="number" min="1" max="30" value="${escapeAttr(s.nights)}"/></div>
+          <div class="field"><label>Days</label><input id="f-days" type="number" min="1" max="31" value="${escapeAttr(s.days)}"/></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Route Summary</label><input id="f-routeSummary" value="${escapeAttr(s.routeSummary)}" placeholder="e.g. Srinagar · Gulmarg · Pahalgam"/></div>
+          <div class="field"><label>Category</label><input id="f-category" value="${escapeAttr(s.category)}" placeholder="e.g. Deluxe (4★)"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DAY BY DAY ===== -->
+    <div class="section">
+      <div class="section-head"><h2>③ Day-by-Day Itinerary</h2><span class="badge">${s.daysList.length} ${s.daysList.length === 1 ? 'DAY' : 'DAYS'}</span></div>
+      <div class="section-body">
+        <div id="days-container">
+          ${s.daysList.map((d, i) => renderDayCard(d, i)).join('')}
+        </div>
+        <button class="add-day" id="btn-add-day">+ Add Day ${s.daysList.length + 1}</button>
+      </div>
+    </div>
+
+    <!-- ===== HOTELS ===== -->
+    <div class="section">
+      <div class="section-head"><h2>④ Accommodation Matrix</h2></div>
+      <div class="section-body">
+        <div id="hotels-container">
+          ${s.hotels.map((h, i) => renderHotelRow(h, i)).join('')}
+        </div>
+        <button class="add-day" id="btn-add-hotel" style="background: var(--brand-magenta); color: white;">+ Add Destination</button>
+      </div>
+    </div>
+
+    <!-- ===== PRICING ===== -->
+    <div class="section">
+      <div class="section-head"><h2>⑤ Package Pricing</h2></div>
+      <div class="section-body">
+        <div class="row">
+          <div class="field"><label>No. of Persons</label><input id="f-pax" value="${escapeAttr(s.pricing.pax)}" placeholder="e.g. 5 Pax"/></div>
+          <div class="field"><label>No. of Rooms</label><input id="f-rooms" value="${escapeAttr(s.pricing.rooms)}" placeholder="e.g. 2 Rooms"/></div>
+        </div>
+        <div class="row row-1">
+          <div class="field"><label>Total Package Price (INR)</label><input id="f-total" value="${escapeAttr(s.pricing.total)}" placeholder="e.g. 100000"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== INCLUSIONS / EXCLUSIONS ===== -->
+    <div class="section">
+      <div class="section-head"><h2>⑥ Inclusions & Exclusions</h2></div>
+      <div class="section-body">
+        <div class="row">
+          <div class="field">
+            <label>✓ Includes (one per line)</label>
+            <textarea id="f-inclusions" rows="8">${escapeHtml(s.inclusions.join('\n'))}</textarea>
+          </div>
+          <div class="field">
+            <label>✕ Excludes (one per line)</label>
+            <textarea id="f-exclusions" rows="8">${escapeHtml(s.exclusions.join('\n'))}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ADDITIONAL NOTES ===== -->
+    <div class="section">
+      <div class="section-head"><h2>⑦ Additional Notes / Custom Message</h2></div>
+      <div class="section-body">
+        <div class="field">
+          <label>Personal Message to Partner (optional, appears at top of email)</label>
+          <textarea id="f-notes" rows="3" placeholder="e.g. Dear Mr. Sharma, As discussed, please find our best net rates for the Kashmir program...">${escapeHtml(s.notes)}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <div style="height: 40px;"></div>
+  `;
+
+  attachBuilderListeners();
+}
+
+function renderDayCard(d, i) {
+  return `
+    <div class="day-card" data-day-index="${i}">
+      <div class="day-card-head">
+        <div class="day-card-num">${String(i + 1).padStart(2, '0')}</div>
+        <div class="day-card-title">${escapeHtml(d.title || 'Untitled Day')}</div>
+        <div class="day-card-actions">
+          ${i > 0 ? `<button class="icon-btn" data-action="up" data-i="${i}">↑</button>` : ''}
+          ${i < state.daysList.length - 1 ? `<button class="icon-btn" data-action="down" data-i="${i}">↓</button>` : ''}
+          <button class="icon-btn danger" data-action="del" data-i="${i}">✕</button>
+        </div>
+      </div>
+      <div class="day-card-body">
+        <div class="row">
+          <div class="field"><label>Route / Sector</label><input data-day="${i}" data-key="route" value="${escapeAttr(d.route)}" placeholder="e.g. Srinagar → Gulmarg"/></div>
+          <div class="field"><label>Day Title</label><input data-day="${i}" data-key="title" value="${escapeAttr(d.title)}" placeholder="e.g. Heritage & Gardens"/></div>
+        </div>
+        <div class="row row-1">
+          <div class="field"><label>Description</label><textarea data-day="${i}" data-key="desc" rows="3" placeholder="Detailed day plan...">${escapeHtml(d.desc)}</textarea></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Overnight Stay</label><input data-day="${i}" data-key="stay" value="${escapeAttr(d.stay)}" placeholder="e.g. Gulmarg Hotel"/></div>
+          <div class="field"><label>Meals</label><input data-day="${i}" data-key="meals" value="${escapeAttr(d.meals)}" placeholder="e.g. Breakfast · Dinner"/></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderHotelRow(h, i) {
+  return `
+    <div class="day-card" data-hotel-index="${i}">
+      <div class="day-card-head">
+        <div class="day-card-num" style="background: var(--brand-magenta); color: white;">H${i + 1}</div>
+        <div class="day-card-title">${escapeHtml(h.city || 'Destination')}</div>
+        <div class="day-card-actions">
+          <button class="icon-btn danger" data-hotel-action="del" data-i="${i}">✕</button>
+        </div>
+      </div>
+      <div class="day-card-body">
+        <div class="row">
+          <div class="field"><label>Destination</label><input data-hotel="${i}" data-key="city" value="${escapeAttr(h.city)}" placeholder="e.g. Srinagar"/></div>
+          <div class="field"><label>Nights / Type</label><input data-hotel="${i}" data-key="nights" value="${escapeAttr(h.nights)}" placeholder="e.g. 2 Nights · Houseboat"/></div>
+        </div>
+        <div class="row row-3">
+          <div class="field"><label>3★ Standard</label><input data-hotel="${i}" data-key="star3" value="${escapeAttr(h.star3)}"/></div>
+          <div class="field"><label>4★ Deluxe</label><input data-hotel="${i}" data-key="star4" value="${escapeAttr(h.star4)}"/></div>
+          <div class="field"><label>5★ Premium</label><input data-hotel="${i}" data-key="star5" value="${escapeAttr(h.star5)}"/></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderPriceRow(label, prefix, p) {
+  return `
+    <tr>
+      <td class="label">${label}</td>
+      <td><input data-price="${prefix}_3" value="${escapeAttr(p[prefix + '_3'] || '')}" placeholder="—"/></td>
+      <td><input data-price="${prefix}_4" value="${escapeAttr(p[prefix + '_4'] || '')}" placeholder="—"/></td>
+      <td><input data-price="${prefix}_5" value="${escapeAttr(p[prefix + '_5'] || '')}" placeholder="—"/></td>
+    </tr>
+  `;
+}
+
+function attachBuilderListeners() {
+  // Top-level fields
+  ['agency', 'contact', 'quoteNo', 'issueDate', 'validity', 'title', 'destination', 'nights', 'days', 'routeSummary', 'category', 'notes'].forEach(key => {
+    const el = document.getElementById('f-' + key);
+    if (el) el.addEventListener('input', () => {
+      state[key] = el.value;
+      renderPreview();
+    });
+  });
+
+  // Inclusions/exclusions (split on newline)
+  ['inclusions', 'exclusions'].forEach(key => {
+    const el = document.getElementById('f-' + key);
+    if (el) el.addEventListener('input', () => {
+      state[key] = el.value.split('\n').map(s => s.trim()).filter(Boolean);
+      renderPreview();
+    });
+  });
+
+  // Day fields
+  document.querySelectorAll('[data-day]').forEach(el => {
+    el.addEventListener('input', () => {
+      const idx = parseInt(el.dataset.day);
+      const key = el.dataset.key;
+      state.daysList[idx][key] = el.value;
+      if (key === 'title') {
+        const titleEl = el.closest('.day-card').querySelector('.day-card-title');
+        if (titleEl) titleEl.textContent = el.value || 'Untitled Day';
+      }
+      renderPreview();
+    });
+  });
+
+  // Day actions
+  document.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.dataset.action;
+      const i = parseInt(btn.dataset.i);
+      if (action === 'up' && i > 0) {
+        [state.daysList[i - 1], state.daysList[i]] = [state.daysList[i], state.daysList[i - 1]];
+      } else if (action === 'down' && i < state.daysList.length - 1) {
+        [state.daysList[i + 1], state.daysList[i]] = [state.daysList[i], state.daysList[i + 1]];
+      } else if (action === 'del') {
+        if (state.daysList.length > 1) {
+          state.daysList.splice(i, 1);
+        } else {
+          alert('At least one day is required.');
+          return;
+        }
+      }
+      renderBuilder();
+      renderPreview();
+    });
+  });
+
+  // Add day
+  const addDayBtn = document.getElementById('btn-add-day');
+  if (addDayBtn) addDayBtn.addEventListener('click', () => {
+    state.daysList.push({ route: '', title: 'New Day', stay: '', desc: '', meals: 'Breakfast · Dinner' });
+    renderBuilder();
+    renderPreview();
+  });
+
+  // Hotel fields
+  document.querySelectorAll('[data-hotel]').forEach(el => {
+    el.addEventListener('input', () => {
+      const idx = parseInt(el.dataset.hotel);
+      const key = el.dataset.key;
+      state.hotels[idx][key] = el.value;
+      if (key === 'city') {
+        const titleEl = el.closest('.day-card').querySelector('.day-card-title');
+        if (titleEl) titleEl.textContent = el.value || 'Destination';
+      }
+      renderPreview();
+    });
+  });
+
+  // Hotel delete
+  document.querySelectorAll('[data-hotel-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = parseInt(btn.dataset.i);
+      if (state.hotels.length > 1) {
+        state.hotels.splice(i, 1);
+        renderBuilder();
+        renderPreview();
+      } else {
+        alert('At least one destination row is required.');
+      }
+    });
+  });
+
+  // Add hotel
+  const addHotelBtn = document.getElementById('btn-add-hotel');
+  if (addHotelBtn) addHotelBtn.addEventListener('click', () => {
+    state.hotels.push({ city: 'New Destination', nights: '', star3: '', star4: '', star5: '' });
+    renderBuilder();
+    renderPreview();
+  });
+
+  // Pricing fields (simplified — pax, rooms, total)
+  ['pax', 'rooms', 'total'].forEach(key => {
+    const el = document.getElementById('f-' + key);
+    if (el) el.addEventListener('input', () => {
+      state.pricing[key] = el.value;
+      renderPreview();
+    });
+  });
+}
+
+/* ================================================================
+   EMAIL PREVIEW (RICH HTML)
+================================================================ */
+function renderPreview() {
+  const el = document.getElementById('preview-content');
+  if (previewMode === 'email') {
+    el.className = 'preview-content email-mode';
+    el.innerHTML = buildEmailHTML();
+  } else {
+    el.className = 'preview-content';
+    el.innerHTML = '<div class="plain-output">' + escapeHtml(buildPlainText()) + '</div>';
+  }
+}
+
+function buildEmailHTML() {
+  const s = state;
+  const formatPrice = (v) => v && !isNaN(v) ? Number(v).toLocaleString('en-IN') : '—';
+
+  let html = '<div class="email-output">';
+  html += `<h2 class="brand">AZEES TRAVELS</h2>`;
+  html += `<div class="brand-sub">B2B Trade Partner Itinerary · Confidential</div>`;
+
+  if (s.notes && s.notes.trim()) {
+    html += `<div class="greeting">${escapeHtml(s.notes).replace(/\n/g, '<br/>')}</div>`;
+  }
+
+  // Meta block
+  html += `<div class="meta-block">`;
+  if (s.agency) html += `<strong>To:</strong> ${escapeHtml(s.agency)}${s.contact ? ' (Attn: ' + escapeHtml(s.contact) + ')' : ''}<br/>`;
+  html += `<strong>Quote:</strong> ${escapeHtml(s.quoteNo)} &nbsp;|&nbsp; <strong>Date:</strong> ${escapeHtml(s.issueDate)}`;
+  if (s.validity) html += ` &nbsp;|&nbsp; <strong>Valid till:</strong> ${escapeHtml(s.validity)}`;
+  html += `<br/><strong>Package:</strong> ${escapeHtml(s.title)} &nbsp;|&nbsp; <strong>Duration:</strong> ${escapeHtml(s.nights)}N / ${escapeHtml(s.days)}D`;
+  if (s.routeSummary) html += `<br/><strong>Route:</strong> ${escapeHtml(s.routeSummary)}`;
+  html += `</div>`;
+
+  // Day by day
+  html += `<h3>◆ Day-by-Day Itinerary</h3>`;
+  s.daysList.forEach((d, i) => {
+    html += `<div class="day">
+      <div class="day-num">DAY ${String(i + 1).padStart(2, '0')}${d.route ? ' · ' + escapeHtml(d.route) : ''}</div>
+      <div class="day-title">${escapeHtml(d.title || 'Untitled')}</div>
+      <div class="day-desc">${escapeHtml(d.desc || '').replace(/\n/g, '<br/>')}</div>
+      <div class="day-meta">
+        ${d.stay ? '<strong>OVERNIGHT:</strong> ' + escapeHtml(d.stay) : ''}
+        ${d.stay && d.meals ? ' &nbsp;·&nbsp; ' : ''}
+        ${d.meals ? '<strong>MEALS:</strong> ' + escapeHtml(d.meals) : ''}
+      </div>
+    </div>`;
+  });
+
+  // Hotels
+  if (s.hotels.length && s.hotels.some(h => h.city)) {
+    html += `<h3>◆ Hotel Options</h3>`;
+    html += `<table class="price"><thead><tr><th>Destination</th><th>3★ Standard</th><th>4★ Deluxe</th><th>5★ Premium</th></tr></thead><tbody>`;
+    s.hotels.forEach(h => {
+      html += `<tr>
+        <td class="label">${escapeHtml(h.city || '—')}${h.nights ? '<br/><span style="font-size:10px;color:#888;">' + escapeHtml(h.nights) + '</span>' : ''}</td>
+        <td>${escapeHtml(h.star3 || '—')}</td>
+        <td>${escapeHtml(h.star4 || '—')}</td>
+        <td>${escapeHtml(h.star5 || '—')}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+  }
+
+  // Pricing — simplified
+  const p = s.pricing;
+  if (p.pax || p.rooms || p.total) {
+    html += `<h3>◆ Package Pricing</h3>`;
+    html += `<table class="price"><tbody>`;
+    if (p.pax) html += `<tr><td class="label" style="width:45%;">No. of Persons</td><td style="font-weight:600;">${escapeHtml(p.pax)}</td></tr>`;
+    if (p.rooms) html += `<tr><td class="label">No. of Rooms</td><td style="font-weight:600;">${escapeHtml(p.rooms)}</td></tr>`;
+    if (p.total) {
+      const totalFormatted = !isNaN(p.total) ? Number(p.total).toLocaleString('en-IN') : p.total;
+      html += `<tr style="background: var(--brand-magenta-light);"><td class="label" style="background: var(--brand-magenta); color: white; font-size: 12px; letter-spacing: 1px;">TOTAL PACKAGE PRICE</td><td style="font-weight:700; font-size: 14px; color: var(--brand-magenta);">${totalFormatted}</td></tr>`;
+    }
+    html += `</tbody></table>`;
+  }
+
+  // Inclusions/exclusions
+  if (s.inclusions.length || s.exclusions.length) {
+    html += `<h3>◆ Inclusions & Exclusions</h3>`;
+    html += `<div class="inc-grid">`;
+    html += `<div><strong style="color: var(--brand-magenta); font-size: 11px; letter-spacing: 1.5px;">PACKAGE INCLUDES</strong><ul>`;
+    s.inclusions.forEach(item => html += `<li class="yes">${escapeHtml(item)}</li>`);
+    html += `</ul></div>`;
+    html += `<div><strong style="color: #c0392b; font-size: 11px; letter-spacing: 1.5px;">PACKAGE EXCLUDES</strong><ul>`;
+    s.exclusions.forEach(item => html += `<li class="no">${escapeHtml(item)}</li>`);
+    html += `</ul></div>`;
+    html += `</div>`;
+  }
+
+  // Signature
+  html += `<div class="signature">
+    Best regards,<br/>
+    <strong>Zuhaib Kundoo</strong><br/>
+    <span class="gold">AZEES TRAVELS · Curated Journeys Since 2022</span><br/>
+    <strong style="color: var(--brand-gold-dark); font-size: 11.5px;">M:</strong> +91 84910 64038 &nbsp;·&nbsp;
+    <strong style="color: var(--brand-gold-dark); font-size: 11.5px;">W:</strong> +91 96222 59639<br/>
+    <strong style="color: var(--brand-gold-dark); font-size: 11.5px;">E:</strong> azeestravelsales@gmail.com &nbsp;·&nbsp;
+    <strong style="color: var(--brand-gold-dark); font-size: 11.5px;">W:</strong> www.azeestravels.com
+  </div>`;
+
+  html += '</div>';
+  return html;
+}
+
+/* ================================================================
+   PLAIN TEXT VERSION (for WhatsApp etc.)
+================================================================ */
+function buildPlainText() {
+  const s = state;
+  const fmt = (v) => v && !isNaN(v) ? Number(v).toLocaleString('en-IN') : '—';
+  let out = '';
+  out += '═══════════════════════════════════════\n';
+  out += '   AZEES TRAVELS · B2B ITINERARY\n';
+  out += '═══════════════════════════════════════\n\n';
+
+  if (s.notes) out += s.notes + '\n\n';
+
+  if (s.agency) out += 'TO: ' + s.agency + (s.contact ? ' (Attn: ' + s.contact + ')' : '') + '\n';
+  out += 'QUOTE: ' + s.quoteNo + ' | DATE: ' + s.issueDate + (s.validity ? ' | VALID: ' + s.validity : '') + '\n';
+  out += 'PACKAGE: ' + s.title + ' (' + s.nights + 'N/' + s.days + 'D)\n';
+  if (s.routeSummary) out += 'ROUTE: ' + s.routeSummary + '\n';
+  out += '\n';
+
+  out += '─── DAY-BY-DAY ITINERARY ───\n\n';
+  s.daysList.forEach((d, i) => {
+    out += '▸ DAY ' + String(i + 1).padStart(2, '0');
+    if (d.route) out += ' · ' + d.route;
+    out += '\n  ' + (d.title || '') + '\n';
+    if (d.desc) out += '  ' + d.desc.replace(/\n/g, '\n  ') + '\n';
+    if (d.stay) out += '  Stay: ' + d.stay + '\n';
+    if (d.meals) out += '  Meals: ' + d.meals + '\n';
+    out += '\n';
+  });
+
+  if (s.hotels.length && s.hotels.some(h => h.city)) {
+    out += '─── HOTEL OPTIONS ───\n\n';
+    s.hotels.forEach(h => {
+      out += h.city + ' (' + (h.nights || '') + ')\n';
+      out += '  3★: ' + (h.star3 || '—') + '\n';
+      out += '  4★: ' + (h.star4 || '—') + '\n';
+      out += '  5★: ' + (h.star5 || '—') + '\n\n';
+    });
+  }
+
+  const p = s.pricing;
+  if (p.pax || p.rooms || p.total) {
+    out += '─── PACKAGE PRICING ───\n\n';
+    if (p.pax) out += 'No. of Persons : ' + p.pax + '\n';
+    if (p.rooms) out += 'No. of Rooms   : ' + p.rooms + '\n';
+    if (p.total) {
+      const totalFormatted = !isNaN(p.total) ? Number(p.total).toLocaleString('en-IN') : p.total;
+      out += 'TOTAL PRICE    : ' + totalFormatted + '\n';
+    }
+    out += '\n';
+  }
+
+  if (s.inclusions.length) {
+    out += '─── INCLUDES ───\n';
+    s.inclusions.forEach(i => out += '  ✓ ' + i + '\n');
+    out += '\n';
+  }
+  if (s.exclusions.length) {
+    out += '─── EXCLUDES ───\n';
+    s.exclusions.forEach(i => out += '  ✕ ' + i + '\n');
+    out += '\n';
+  }
+
+  out += '═══════════════════════════════════════\n';
+  out += 'Best regards,\nZuhaib Kundoo\nAzees Travels · Curated Journeys Since 2022\n\n';
+  out += 'M: +91 84910 64038 | W: +91 96222 59639\n';
+  out += 'E: azeestravelsales@gmail.com\n';
+  out += 'W: www.azeestravels.com\n';
+  return out;
+}
+
+/* ================================================================
+   SAVED ITINERARIES LIST
+================================================================ */
+async function refreshSavedList() {
+  const ul = document.getElementById('saved-list');
+  const keys = await loadSavedList();
+  if (!keys.length) {
+    ul.innerHTML = '<li class="saved-empty">No saved itineraries yet. Build one and click Save.</li>';
+    return;
+  }
+
+  const items = [];
+  for (const key of keys) {
+    const itin = await loadItinerary(key);
+    if (itin) items.push({ key, itin });
+  }
+  items.sort((a, b) => (b.itin.id || '').localeCompare(a.itin.id || ''));
+
+  ul.innerHTML = items.map(({ key, itin }) => `
+    <li class="saved-item" data-key="${escapeAttr(key)}">
+      <div class="saved-item-title">${escapeHtml(itin.title || 'Untitled')}</div>
+      <div class="saved-item-meta">${escapeHtml(itin.nights || '?')}N/${escapeHtml(itin.days || '?')}D · ${escapeHtml(itin.agency || 'No agency')}</div>
+      <button class="saved-item-delete" data-del-key="${escapeAttr(key)}" title="Delete">✕</button>
+    </li>
+  `).join('');
+
+  ul.querySelectorAll('.saved-item').forEach(li => {
+    li.addEventListener('click', async (e) => {
+      if (e.target.closest('.saved-item-delete')) return;
+      const key = li.dataset.key;
+      const itin = await loadItinerary(key);
+      if (itin) {
+        state = itin;
+        activeItineraryId = key;
+        renderBuilder();
+        renderPreview();
+        showFeedback('✓ Loaded: ' + (itin.title || 'Untitled'));
+      }
+    });
+  });
+
+  ul.querySelectorAll('[data-del-key]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.delKey;
+      if (confirm('Delete this itinerary permanently?')) {
+        await deleteItinerary(key);
+        await refreshSavedList();
+        showFeedback('✓ Deleted');
+      }
+    });
+  });
+}
+
+function renderTemplates() {
+  const el = document.getElementById('template-list');
+  el.innerHTML = TEMPLATES.map((t, i) => `
+    <button class="template-btn" data-tpl="${i}">
+      <strong>${escapeHtml(t.name)}</strong>
+      <span>${escapeHtml(t.sub)}</span>
+    </button>
+  `).join('');
+  el.querySelectorAll('[data-tpl]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = parseInt(btn.dataset.tpl);
+      const tpl = TEMPLATES[i];
+      if (confirm('Load template "' + tpl.name + '"? This will replace current data.')) {
+        state = createBlankItinerary();
+        tpl.apply(state);
+        state.id = 'itin_' + Date.now();
+        activeItineraryId = null;
+        renderBuilder();
+        renderPreview();
+        showFeedback('✓ Template loaded');
+      }
+    });
+  });
+}
+
+/* ================================================================
+   COPY TO CLIPBOARD
+================================================================ */
+async function copyRichHTML() {
+  const html = buildEmailHTML();
+  const plain = buildPlainText();
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      const blob = new Blob([html], { type: 'text/html' });
+      const plainBlob = new Blob([plain], { type: 'text/plain' });
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'text/html': blob, 'text/plain': plainBlob })
+      ]);
+      showFeedback('✓ Rich email copied — paste into Gmail');
+    } else {
+      throw new Error('Clipboard API unavailable');
+    }
+  } catch (e) {
+    // Fallback: select preview content and copy
+    const el = document.getElementById('preview-content');
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    document.execCommand('copy');
+    sel.removeAllRanges();
+    showFeedback('✓ Copied (fallback method)');
+  }
+}
+
+async function copyPlainText() {
+  try {
+    await navigator.clipboard.writeText(buildPlainText());
+    showFeedback('✓ Plain text copied');
+  } catch (e) {
+    alert('Could not copy. Please select manually.');
+  }
+}
+
+function showFeedback(msg) {
+  const el = document.getElementById('copy-feedback');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+/* ================================================================
+   EXPORT AS PDF (uses html2pdf library)
+================================================================ */
+function buildStandaloneHTML() {
+  // Extract email-output CSS rules from the main stylesheet
+  const allStyles = document.querySelector('style').textContent;
+  const emailCssMatch = allStyles.match(/\/\* ============ FORMATTED EMAIL OUTPUT ============ \*\/[\s\S]*?\/\* Plain text view \*\//);
+  const emailCss = emailCssMatch ? emailCssMatch[0] : '';
+
+  return `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"/><title>${escapeHtml(state.title)} — Azees Travels</title>
+<style>
+:root {
+  --brand-magenta: #7c236a; --brand-magenta-dark: #5a1850; --brand-magenta-light: #f5e8f1;
+  --brand-gold: #ba9c62; --brand-gold-dark: #8e7547; --brand-gold-light: #faf4e8;
+  --ink: #1a1a1a; --ink-soft: #4a4a4a; --ink-muted: #888;
+  --line: #e8e3da; --bg: #faf8f5;
+}
+body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0; background: #fff; color: #2a2a2a; font-size: 13px; line-height: 1.5; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 30px 25px; }
+${emailCss}
+.email-output { padding: 0; }
+@media print {
+  body { background: white; }
+  .day, .meta-block { page-break-inside: avoid; }
+  h3 { page-break-after: avoid; }
+  table { page-break-inside: avoid; }
+}
+</style></head><body><div class="wrap">${buildEmailHTML()}</div></body></html>`;
+}
+
+function exportAsPDF() {
+  showFeedback('⏳ Generating PDF, please wait...');
+
+  // Build complete styled HTML with all email-output CSS inlined
+  const wrapper = document.createElement('div');
+  wrapper.id = 'pdf-render-target';
+  wrapper.style.cssText = 'position: fixed; left: 0; top: 0; width: 794px; background: white; z-index: -1; opacity: 0; pointer-events: none;';
+
+  // Inject the email content with full inline styles for reliable rendering
+  wrapper.innerHTML = `
+    <div style="padding: 30px 35px; font-family: Helvetica, Arial, sans-serif; color: #2a2a2a; background: white; box-sizing: border-box; width: 794px;">
+      ${buildEmailHTMLForPDF()}
+    </div>
+  `;
+  document.body.appendChild(wrapper);
+
+  const filename = (state.title || 'azees-itinerary').replace(/[^a-z0-9]/gi, '-').toLowerCase() + '.pdf';
+
+  const opt = {
+    margin: [8, 8, 8, 8],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      letterRendering: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      windowWidth: 794
+    },
+    jsPDF: {
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'portrait',
+      compress: true
+    },
+    pagebreak: { mode: ['css', 'legacy'], avoid: ['.day', '.meta-block', 'table', 'h3'] }
+  };
+
+  // Give the DOM a moment to layout before capture
+  setTimeout(() => {
+    html2pdf().set(opt).from(wrapper).save().then(() => {
+      document.body.removeChild(wrapper);
+      showFeedback('✓ PDF downloaded successfully');
+    }).catch(err => {
+      if (wrapper.parentNode) document.body.removeChild(wrapper);
+      console.error('PDF error:', err);
+      alert('PDF generation failed: ' + (err.message || 'unknown error') + '\n\nAs a fallback, click the HTML button and use your browser Print → Save as PDF.');
+    });
+  }, 200);
+}
+
+/* Build a fully inlined-style version of the email for reliable PDF capture */
+function buildEmailHTMLForPDF() {
+  const s = state;
+  const fmt = (v) => v && !isNaN(v) ? Number(v).toLocaleString('en-IN') : v ? v : '—';
+
+  let html = '';
+
+  // Brand header
+  html += `<div style="border-bottom: 3px solid #ba9c62; padding-bottom: 14px; margin-bottom: 18px;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div style="width: 50px; height: 50px; background: #1a1a1a; color: #ba9c62; text-align: center; line-height: 50px; font-size: 26px; font-family: Georgia, serif;">A</div>
+      <div>
+        <div style="font-size: 20px; color: #7c236a; letter-spacing: 4px; font-weight: 300;">AZEES TRAVELS</div>
+        <div style="font-size: 9px; color: #ba9c62; letter-spacing: 2.5px; font-weight: 700; margin-top: 3px; text-transform: uppercase;">B2B Trade Partner Itinerary · Confidential</div>
+      </div>
+    </div>
+  </div>`;
+
+  // Greeting
+  if (s.notes && s.notes.trim()) {
+    html += `<div style="margin-bottom: 14px; font-size: 12px; color: #4a4a4a; line-height: 1.65;">${escapeHtml(s.notes).replace(/\n/g, '<br/>')}</div>`;
+  }
+
+  // Meta block
+  html += `<div style="background: #faf8f5; padding: 12px 14px; margin-bottom: 18px; border-left: 3px solid #7c236a; font-size: 12px; line-height: 1.65;">`;
+  if (s.agency) html += `<strong style="color: #7c236a;">To:</strong> ${escapeHtml(s.agency)}${s.contact ? ' (Attn: ' + escapeHtml(s.contact) + ')' : ''}<br/>`;
+  html += `<strong style="color: #7c236a;">Quote:</strong> ${escapeHtml(s.quoteNo)} &nbsp;|&nbsp; <strong style="color: #7c236a;">Date:</strong> ${escapeHtml(s.issueDate)}`;
+  if (s.validity) html += ` &nbsp;|&nbsp; <strong style="color: #7c236a;">Valid till:</strong> ${escapeHtml(s.validity)}`;
+  html += `<br/><strong style="color: #7c236a;">Package:</strong> ${escapeHtml(s.title)} &nbsp;|&nbsp; <strong style="color: #7c236a;">Duration:</strong> ${escapeHtml(s.nights)}N / ${escapeHtml(s.days)}D`;
+  if (s.routeSummary) html += `<br/><strong style="color: #7c236a;">Route:</strong> ${escapeHtml(s.routeSummary)}`;
+  html += `</div>`;
+
+  // Section heading helper
+  const sectionH = (txt) => `<h3 style="color: #7c236a; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; margin: 22px 0 10px 0; border-left: 3px solid #ba9c62; padding-left: 10px;">${txt}</h3>`;
+
+  // Day by day
+  html += sectionH('◆ Day-by-Day Itinerary');
+  s.daysList.forEach((d, i) => {
+    html += `<div class="day" style="background: #faf8f5; padding: 12px 14px; margin-bottom: 8px; border-left: 3px solid #ba9c62; page-break-inside: avoid;">
+      <div style="background: #7c236a; color: white; display: inline-block; padding: 2px 9px; font-size: 10px; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 5px;">DAY ${String(i + 1).padStart(2, '0')}${d.route ? ' · ' + escapeHtml(d.route) : ''}</div>
+      <div style="font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 5px;">${escapeHtml(d.title || 'Untitled')}</div>
+      <div style="font-size: 12px; color: #4a4a4a; line-height: 1.6;">${escapeHtml(d.desc || '').replace(/\n/g, '<br/>')}</div>
+      <div style="font-size: 10.5px; color: #888; margin-top: 5px;">
+        ${d.stay ? '<strong style="color:#8e7547;">OVERNIGHT:</strong> ' + escapeHtml(d.stay) : ''}
+        ${d.stay && d.meals ? ' &nbsp;·&nbsp; ' : ''}
+        ${d.meals ? '<strong style="color:#8e7547;">MEALS:</strong> ' + escapeHtml(d.meals) : ''}
+      </div>
+    </div>`;
+  });
+
+  // Hotels
+  if (s.hotels.length && s.hotels.some(h => h.city)) {
+    html += sectionH('◆ Hotel Options');
+    html += `<table style="width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 11.5px; page-break-inside: avoid;">
+      <thead><tr>
+        <th style="background:#7c236a; color:white; padding:7px 8px; font-size:10px; letter-spacing:1.2px; text-transform:uppercase; border:1px solid #5a1850; text-align:left;">Destination</th>
+        <th style="background:#7c236a; color:white; padding:7px 8px; font-size:10px; letter-spacing:1.2px; text-transform:uppercase; border:1px solid #5a1850;">3★ Standard</th>
+        <th style="background:#7c236a; color:white; padding:7px 8px; font-size:10px; letter-spacing:1.2px; text-transform:uppercase; border:1px solid #5a1850;">4★ Deluxe</th>
+        <th style="background:#7c236a; color:white; padding:7px 8px; font-size:10px; letter-spacing:1.2px; text-transform:uppercase; border:1px solid #5a1850;">5★ Premium</th>
+      </tr></thead><tbody>`;
+    s.hotels.forEach(h => {
+      html += `<tr>
+        <td style="padding:6px 8px; border:1px solid #e8e3da; background:#faf4e8; font-weight:600;">${escapeHtml(h.city || '—')}${h.nights ? '<br/><span style="font-size:10px;color:#888;font-weight:400;">' + escapeHtml(h.nights) + '</span>' : ''}</td>
+        <td style="padding:6px 8px; border:1px solid #e8e3da; text-align:center;">${escapeHtml(h.star3 || '—')}</td>
+        <td style="padding:6px 8px; border:1px solid #e8e3da; text-align:center;">${escapeHtml(h.star4 || '—')}</td>
+        <td style="padding:6px 8px; border:1px solid #e8e3da; text-align:center;">${escapeHtml(h.star5 || '—')}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+  }
+
+  // Pricing
+  const p = s.pricing;
+  if (p.pax || p.rooms || p.total) {
+    html += sectionH('◆ Package Pricing');
+    html += `<table style="width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 12px; page-break-inside: avoid;"><tbody>`;
+    if (p.pax) html += `<tr><td style="padding:8px 10px; border:1px solid #e8e3da; background:#faf4e8; font-weight:600; width:45%;">No. of Persons</td><td style="padding:8px 10px; border:1px solid #e8e3da; font-weight:600;">${escapeHtml(p.pax)}</td></tr>`;
+    if (p.rooms) html += `<tr><td style="padding:8px 10px; border:1px solid #e8e3da; background:#faf4e8; font-weight:600;">No. of Rooms</td><td style="padding:8px 10px; border:1px solid #e8e3da; font-weight:600;">${escapeHtml(p.rooms)}</td></tr>`;
+    if (p.total) {
+      const totalFmt = !isNaN(p.total) ? Number(p.total).toLocaleString('en-IN') : p.total;
+      html += `<tr><td style="padding:10px; background:#7c236a; color:white; font-size:12px; letter-spacing:1px; font-weight:700; border:1px solid #5a1850;">TOTAL PACKAGE PRICE</td><td style="padding:10px; background:#f5e8f1; font-weight:700; font-size:15px; color:#7c236a; border:1px solid #e8e3da;">${totalFmt}</td></tr>`;
+    }
+    html += `</tbody></table>`;
+  }
+
+  // Inclusions / Exclusions
+  if (s.inclusions.length || s.exclusions.length) {
+    html += sectionH('◆ Inclusions & Exclusions');
+    html += `<table style="width:100%; border-collapse: collapse; margin-top:6px; page-break-inside: avoid;"><tr>
+      <td style="width:50%; vertical-align:top; padding-right:12px;">
+        <div style="color:#7c236a; font-size:11px; letter-spacing:1.5px; font-weight:700; margin-bottom:6px; text-transform: uppercase;">Package Includes</div>
+        <div style="font-size:11.5px; line-height:1.6;">`;
+    s.inclusions.forEach(item => html += `<div style="padding:3px 0 3px 16px; position:relative; color:#4a4a4a;"><span style="color:#7c236a; font-weight:700; position:absolute; left:0;">✓</span>${escapeHtml(item)}</div>`);
+    html += `</div></td><td style="width:50%; vertical-align:top; padding-left:12px; border-left:1px solid #e8e3da;">
+        <div style="color:#c0392b; font-size:11px; letter-spacing:1.5px; font-weight:700; margin-bottom:6px; text-transform: uppercase;">Package Excludes</div>
+        <div style="font-size:11.5px; line-height:1.6;">`;
+    s.exclusions.forEach(item => html += `<div style="padding:3px 0 3px 16px; position:relative; color:#4a4a4a;"><span style="color:#c0392b; font-weight:700; position:absolute; left:0;">✕</span>${escapeHtml(item)}</div>`);
+    html += `</div></td></tr></table>`;
+  }
+
+  // Signature
+  html += `<div style="margin-top: 26px; padding-top: 14px; border-top: 2px solid #ba9c62; font-size: 11.5px; color: #4a4a4a; line-height: 1.7; page-break-inside: avoid;">
+    Best regards,<br/>
+    <strong style="color: #7c236a; font-size: 13px;">Zuhaib Kundoo</strong><br/>
+    <span style="color: #8e7547; font-weight: 600;">AZEES TRAVELS · Curated Journeys Since 2022</span><br/>
+    <strong style="color: #8e7547; font-size: 11.5px;">M:</strong> +91 84910 64038 &nbsp;·&nbsp;
+    <strong style="color: #8e7547; font-size: 11.5px;">W:</strong> +91 96222 59639<br/>
+    <strong style="color: #8e7547; font-size: 11.5px;">E:</strong> azeestravelsales@gmail.com &nbsp;·&nbsp;
+    <strong style="color: #8e7547; font-size: 11.5px;">W:</strong> www.azeestravels.com
+  </div>`;
+
+  return html;
+}
+
+/* ================================================================
+   EXPORT AS WORD DOCUMENT (.doc with MS Office HTML format)
+================================================================ */
+function exportAsWord() {
+  // Microsoft Word reads HTML with MSO conditional comments
+  const wordHTML = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>${escapeHtml(state.title)}</title>
+<!--[if gte mso 9]>
+<xml>
+<w:WordDocument>
+<w:View>Print</w:View>
+<w:Zoom>100</w:Zoom>
+<w:DoNotOptimizeForBrowser/>
+</w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+@page { size: A4 portrait; margin: 1.5cm; }
+body { font-family: 'Calibri', 'Helvetica Neue', Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #2a2a2a; }
+</style>
+</head>
+<body>${buildEmailHTMLForPDF()}</body>
+</html>`;
+
+  const blob = new Blob(['\ufeff', wordHTML], { type: 'application/msword;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (state.title || 'azees-itinerary').replace(/[^a-z0-9]/gi, '-').toLowerCase() + '.doc';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+  showFeedback('✓ Word document downloaded');
+}
+
+/* ================================================================
+   EXPORT STANDALONE HTML
+================================================================ */
+function exportAsHTML() {
+  const html = buildEmailHTML();
+  const fullDoc = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"/><title>${escapeHtml(state.title)} — Azees Travels</title>
+<style>
+:root { --brand-magenta: #7c236a; --brand-gold: #ba9c62; --brand-gold-light: #faf4e8; --brand-magenta-light: #f5e8f1; --line: #e8e3da; --ink: #1a1a1a; --ink-soft: #4a4a4a; --ink-muted: #888; --bg: #faf8f5; --brand-gold-dark: #8e7547; }
+body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 40px auto; max-width: 800px; padding: 0 20px; background: #fff; }
+${document.querySelector('style').textContent.split('.email-output')[1].split('/* Plain text view */')[0].split('}').map(r => r ? '.email-output' + r + '}' : '').join('')}
+</style></head><body>${html}</body></html>`;
+  const blob = new Blob([fullDoc], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (state.title || 'itinerary').replace(/[^a-z0-9]/gi, '-').toLowerCase() + '.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  showFeedback('✓ Downloaded HTML file');
+}
+
+/* ================================================================
+   UTILITIES
+================================================================ */
+function escapeHtml(str) {
+  if (str === undefined || str === null) return '';
+  return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function escapeAttr(str) { return escapeHtml(str); }
+
+/* ================================================================
+   TOP NAV ACTIONS
+================================================================ */
+document.getElementById('btn-new').addEventListener('click', () => {
+  if (confirm('Start a new blank itinerary? Unsaved changes will be lost.')) {
+    state = createBlankItinerary();
+    activeItineraryId = null;
+    renderBuilder();
+    renderPreview();
+  }
+});
+
+document.getElementById('btn-save').addEventListener('click', async () => {
+  if (!state.title || state.title === 'Untitled Kashmir Itinerary') {
+    const name = prompt('Enter a name for this itinerary:', state.title);
+    if (!name) return;
+    state.title = name;
+  }
+  const ok = await saveItinerary(state);
+  if (ok) {
+    activeItineraryId = STORAGE_PREFIX + state.id;
+    await refreshSavedList();
+    renderBuilder();
+    showFeedback('✓ Saved: ' + state.title);
+  }
+});
+
+document.getElementById('btn-clear').addEventListener('click', () => {
+  if (confirm('Reset current itinerary to blank? Unsaved changes will be lost.')) {
+    state = createBlankItinerary();
+    activeItineraryId = null;
+    renderBuilder();
+    renderPreview();
+  }
+});
+
+document.getElementById('btn-export').addEventListener('click', exportAsHTML);
+document.getElementById('btn-export-pdf').addEventListener('click', exportAsPDF);
+document.getElementById('btn-export-word').addEventListener('click', exportAsWord);
+
+document.getElementById('btn-copy-rich').addEventListener('click', copyRichHTML);
+document.getElementById('btn-copy-plain').addEventListener('click', copyPlainText);
+
+document.querySelectorAll('.preview-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    previewMode = tab.dataset.mode;
+    renderPreview();
+  });
+});
+
+/* ================================================================
+   INIT
+================================================================ */
+(async function init() {
+  renderTemplates();
+  renderBuilder();
+  renderPreview();
+  await refreshSavedList();
+})();
+</script>
+
+</body>
+</html>
