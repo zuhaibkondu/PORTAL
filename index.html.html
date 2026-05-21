@@ -47,14 +47,13 @@
     gap: 12px;
   }
   .nav-logo {
-    width: 38px; height: 38px;
-    background: var(--brand-gold);
-    color: var(--ink);
+    width: 44px; height: 44px;
+    background: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
-    font-weight: 300;
+    padding: 4px;
+    box-sizing: border-box;
   }
   .nav-title {
     font-size: 11px;
@@ -103,6 +102,36 @@
   .nav-btn.gold:hover {
     background: var(--brand-gold-dark);
     color: white;
+  }
+
+  /* ============ MODULE SWITCHER ============ */
+  .module-switcher {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.05);
+    padding: 4px;
+    border: 1px solid #333;
+  }
+  .mod-btn {
+    background: transparent;
+    color: #aaa;
+    border: none;
+    padding: 8px 16px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .mod-btn:hover {
+    color: white;
+    background: rgba(255,255,255,0.05);
+  }
+  .mod-btn.active {
+    background: var(--brand-gold);
+    color: var(--ink);
   }
 
   /* ============ LAYOUT ============ */
@@ -738,11 +767,15 @@
 <!-- ============ TOP NAV ============ -->
 <nav class="topnav">
   <div class="nav-brand">
-    <div class="nav-logo">A</div>
+    <div class="nav-logo"><img id="nav-logo-img" alt="Azees Travels" style="width: 100%; height: 100%; object-fit: contain;"/></div>
     <div>
       <div class="nav-title">AZEES TRAVELS</div>
-      <div class="nav-sub">B2B Itinerary Builder · Trade Partner Portal</div>
+      <div class="nav-sub">B2B Portal · Trade Partner Tools</div>
     </div>
+  </div>
+  <div class="module-switcher">
+    <button class="mod-btn active" id="mod-itinerary" data-mod="itinerary">📋 Itinerary Builder</button>
+    <button class="mod-btn" id="mod-invoice" data-mod="invoice">🧾 Invoice Generator</button>
   </div>
   <div class="nav-actions">
     <button class="nav-btn gold" id="btn-save">💾 Save</button>
@@ -796,6 +829,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 'use strict';
+
+const AZEES_LOGO = 'data:image/png;base64,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GUmXZWj/KI16VgzZ9m0zgUKdlWKMIPPKmaI/QImZ4Lti8jaVa5pb3PbR7UXU5g0agwW6fMLk3CwP/PST/Oxn/neSdQl5Y5HUCCoWh6CFT2HUkyynByvSMoNGH9ldVIqCSDvrgaS1NZQpcfrgqVvMr0iAOxz4SLColda4mzXDm6msrUBeJ1EoOUUF8sSQeMNE7Srv/bkf4e/9+oeRToPzSrlUQUxya0I/FNosq4koDgpRLth2YAfpmgppHbSNjzoUCSoeRcolJl4dozpRxRu77BzhFZQHAFOMNV2/bQOrNq3GNxrk1lK3CSUSkqzBlJ/mxz/2M/z4r/5tGs6Re09iTHB2byJVq7xXlleNy5JeUM76oY2s376pyAfYNo62CHdIvcekCdOXJ7j4+lkMsuzkUlZMGLS5Y3t12C7Dhu2byJwLu2GSUs/qVJMqf+sTf593f/QDVF2OK1TkpH3m8b1iBeG9x5YtWx/aTtUttFcxrrAsDYpJDPVaxtjLJ4upMvEEuEueQEhP5UXya/PeQWqa020sfmGGRp/ws7/zK7zzJ56g4RqUjFA2kBCGY6ssx5bu73ICFJGugcd2oEkeFmabSKAqxcBCj0NJTYlTz58Is8uWmV5QsnKWf9iamrd/48gmTFfC5OIE3dt7+Ll/+0ts3j/AQl6nwyRBorCQUmyOJtUVQgBFW9Iogw/toGN1BclNCAa1YYtWSbDigh6EESqVLq6/fpX69RrljZXQM7BMHOIVQYBbSGAEBwyMDlHP6qzfN8yHfusX6R3qo54t0mkrCAYvwWG0JhyDRrXYNGXZ34nmPF8H9G3fSN+mdZx56QKVzk7Uv/2IVm5SsjwHyaiblJIarh+b5MzhUzzw/geDZquNBLiDu15RqyMg3mAESpu6OPChH+Rvfuin6ervJncNymn5FmfX3LLeV8r022LGmASFjKRsee8v/XWGXhujXOpEfTtOAMH6IhIkQiKGxVqVpLe0FDxbLndLV9K0g+ZRIITy5cIM8HnQs0FaP17RaL1HBXUOSSwR9wsBuGnautOlcKaRpaTQffSA1WsYbaqgxt9W0lljW62ZkQD3AAlCNKRQN76pP2DFE+AmlutN/tFtn5ewDO/siiXAmzrJ99kJcPN7l9v9pJfhjU3ul0V/vy7+Wxa+3O5Mh4kEuLfiIfc59C/fENp7v5efh3XfmEARESvjzIqIiASIiIgEiIiIBIiIiASIiIgEiIiIBIiIiASIiIgEiIiIBIiIiASIiIgEiIiIBIiIiASIiIgEiIiIBIiIiASIiASIiIgEiIiIBIiIiASIiIgEiIiIBIiIiASIiIgEiIiIBIiIiASIiIgEiIiIBIiIiASIiIgEiIiIBIiIiASIiIgEiIiIBIiIiASIiIgEiIiIBIiIiASIiIgEiIiIBIiIiASIiIgEiIi4i/j/AVfrp/5GXJljAAAAAElFTkSuQmCC';
+
 
 /* ================================================================
    DATA MODEL & STATE
@@ -940,11 +976,44 @@ const TEMPLATES = [
 ];
 
 /* ================================================================
-   STORAGE
+   STORAGE (localStorage-based, works in any browser including Vercel deploy)
 ================================================================ */
+const _storage = {
+  async get(key) {
+    try {
+      const v = localStorage.getItem(key);
+      return v !== null ? { value: v } : null;
+    } catch (e) { return null; }
+  },
+  async set(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      return { value };
+    } catch (e) {
+      throw new Error('Storage failed: ' + (e.message || 'unknown'));
+    }
+  },
+  async delete(key) {
+    try {
+      localStorage.removeItem(key);
+      return { deleted: true };
+    } catch (e) { return null; }
+  },
+  async list(prefix) {
+    try {
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(prefix)) keys.push(k);
+      }
+      return { keys };
+    } catch (e) { return { keys: [] }; }
+  }
+};
+
 async function loadSavedList() {
   try {
-    const result = await window.storage.list(STORAGE_PREFIX);
+    const result = await _storage.list(STORAGE_PREFIX);
     return result?.keys || [];
   } catch (e) {
     return [];
@@ -953,7 +1022,7 @@ async function loadSavedList() {
 
 async function loadItinerary(key) {
   try {
-    const result = await window.storage.get(key);
+    const result = await _storage.get(key);
     return result ? JSON.parse(result.value) : null;
   } catch (e) {
     return null;
@@ -963,7 +1032,7 @@ async function loadItinerary(key) {
 async function saveItinerary(itin) {
   const key = STORAGE_PREFIX + itin.id;
   try {
-    await window.storage.set(key, JSON.stringify(itin));
+    await _storage.set(key, JSON.stringify(itin));
     return true;
   } catch (e) {
     alert('Could not save: ' + e.message);
@@ -973,7 +1042,7 @@ async function saveItinerary(itin) {
 
 async function deleteItinerary(key) {
   try {
-    await window.storage.delete(key);
+    await _storage.delete(key);
     return true;
   } catch (e) {
     return false;
@@ -1291,7 +1360,14 @@ function buildEmailHTML() {
   const formatPrice = (v) => v && !isNaN(v) ? Number(v).toLocaleString('en-IN') : '—';
 
   let html = '<div class="email-output">';
-  html += `<h2 class="brand">AZEES TRAVELS</h2>`;
+  html += `<table style="width: 100%; margin-bottom: 4px;"><tr>
+    <td style="width: 70px; vertical-align: middle; padding-right: 14px;">
+      <img src="${AZEES_LOGO}" alt="Azees Travels" style="width: 60px; height: 60px; display: block; object-fit: contain;"/>
+    </td>
+    <td style="vertical-align: middle;">
+      <h2 class="brand" style="margin: 0;">AZEES TRAVELS</h2>
+    </td>
+  </tr></table>`;
   html += `<div class="brand-sub">B2B Trade Partner Itinerary · Confidential</div>`;
 
   if (s.notes && s.notes.trim()) {
@@ -1608,55 +1684,58 @@ ${emailCss}
 }
 
 function exportAsPDF() {
-  showFeedback('⏳ Generating PDF, please wait...');
+  // Build a fully self-contained printable HTML document
+  // and open it in a new window with the browser's native print dialog.
+  // This uses the browser's built-in PDF generator — 100% reliable across all browsers.
+  const filename = (state.title || 'azees-itinerary').replace(/[^a-z0-9]/gi, '-').toLowerCase();
+  const content = buildEmailHTMLForPDF();
 
-  // Build complete styled HTML with all email-output CSS inlined
-  const wrapper = document.createElement('div');
-  wrapper.id = 'pdf-render-target';
-  wrapper.style.cssText = 'position: fixed; left: 0; top: 0; width: 794px; background: white; z-index: -1; opacity: 0; pointer-events: none;';
+  const printHTML = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"/>
+<title>${escapeHtml(state.title || 'Azees Itinerary')}</title>
+<style>
+  @page { size: A4 portrait; margin: 12mm; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0; background: white; color: #2a2a2a; font-size: 12px; line-height: 1.5; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+  .container { max-width: 100%; padding: 0; }
+  table { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .day, .meta-block, table, h3 { page-break-inside: avoid; }
+  h3 { page-break-after: avoid; }
+  .print-controls { background: #1a1a1a; color: white; padding: 14px 20px; text-align: center; font-family: 'Helvetica Neue', Arial, sans-serif; position: sticky; top: 0; z-index: 1000; }
+  .print-controls button { background: #7c236a; color: white; border: none; padding: 10px 24px; font-size: 13px; letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase; font-weight: 700; font-family: inherit; margin: 0 6px; }
+  .print-controls button:hover { background: #5a1850; }
+  .print-controls button.close { background: transparent; border: 1px solid #555; }
+  .print-controls .hint { color: #ba9c62; font-size: 11px; letter-spacing: 1.5px; margin-top: 6px; text-transform: uppercase; }
+  @media print {
+    .print-controls { display: none !important; }
+    body { padding: 0; margin: 0; }
+  }
+</style>
+</head><body>
+<div class="print-controls">
+  <button onclick="window.print()">🖨️ Save as PDF / Print</button>
+  <button class="close" onclick="window.close()">Close</button>
+  <div class="hint">In the print dialog → Destination → Save as PDF → Save</div>
+</div>
+<div class="container">${content}</div>
+<scr` + `ipt>
+  // Auto-open the print dialog once everything is loaded
+  window.addEventListener('load', function() {
+    setTimeout(function() { window.print(); }, 600);
+  });
+</scr` + `ipt>
+</body></html>`;
 
-  // Inject the email content with full inline styles for reliable rendering
-  wrapper.innerHTML = `
-    <div style="padding: 30px 35px; font-family: Helvetica, Arial, sans-serif; color: #2a2a2a; background: white; box-sizing: border-box; width: 794px;">
-      ${buildEmailHTMLForPDF()}
-    </div>
-  `;
-  document.body.appendChild(wrapper);
-
-  const filename = (state.title || 'azees-itinerary').replace(/[^a-z0-9]/gi, '-').toLowerCase() + '.pdf';
-
-  const opt = {
-    margin: [8, 8, 8, 8],
-    filename: filename,
-    image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      letterRendering: true,
-      logging: false,
-      backgroundColor: '#ffffff',
-      windowWidth: 794
-    },
-    jsPDF: {
-      unit: 'mm',
-      format: 'a4',
-      orientation: 'portrait',
-      compress: true
-    },
-    pagebreak: { mode: ['css', 'legacy'], avoid: ['.day', '.meta-block', 'table', 'h3'] }
-  };
-
-  // Give the DOM a moment to layout before capture
-  setTimeout(() => {
-    html2pdf().set(opt).from(wrapper).save().then(() => {
-      document.body.removeChild(wrapper);
-      showFeedback('✓ PDF downloaded successfully');
-    }).catch(err => {
-      if (wrapper.parentNode) document.body.removeChild(wrapper);
-      console.error('PDF error:', err);
-      alert('PDF generation failed: ' + (err.message || 'unknown error') + '\n\nAs a fallback, click the HTML button and use your browser Print → Save as PDF.');
-    });
-  }, 200);
+  // Open in a new window
+  const win = window.open('', '_blank', 'width=850,height=900');
+  if (!win) {
+    alert('Please allow pop-ups for this site, then click PDF again.');
+    return;
+  }
+  win.document.write(printHTML);
+  win.document.close();
+  win.document.title = filename + '.pdf';
+  showFeedback('✓ Print dialog opened — choose "Save as PDF"');
 }
 
 /* Build a fully inlined-style version of the email for reliable PDF capture */
@@ -1668,13 +1747,17 @@ function buildEmailHTMLForPDF() {
 
   // Brand header
   html += `<div style="border-bottom: 3px solid #ba9c62; padding-bottom: 14px; margin-bottom: 18px;">
-    <div style="display: flex; align-items: center; gap: 14px;">
-      <div style="width: 50px; height: 50px; background: #1a1a1a; color: #ba9c62; text-align: center; line-height: 50px; font-size: 26px; font-family: Georgia, serif;">A</div>
-      <div>
-        <div style="font-size: 20px; color: #7c236a; letter-spacing: 4px; font-weight: 300;">AZEES TRAVELS</div>
-        <div style="font-size: 9px; color: #ba9c62; letter-spacing: 2.5px; font-weight: 700; margin-top: 3px; text-transform: uppercase;">B2B Trade Partner Itinerary · Confidential</div>
-      </div>
-    </div>
+    <table style="width: 100%;">
+      <tr>
+        <td style="width: 70px; vertical-align: middle; padding-right: 16px;">
+          <img src="${AZEES_LOGO}" alt="Azees Travels" style="width: 64px; height: 64px; display: block; object-fit: contain;"/>
+        </td>
+        <td style="vertical-align: middle;">
+          <div style="font-size: 20px; color: #7c236a; letter-spacing: 4px; font-weight: 300;">AZEES TRAVELS</div>
+          <div style="font-size: 9px; color: #ba9c62; letter-spacing: 2.5px; font-weight: 700; margin-top: 3px; text-transform: uppercase;">B2B Trade Partner Itinerary · Confidential</div>
+        </td>
+      </tr>
+    </table>
   </div>`;
 
   // Greeting
@@ -1846,58 +1929,998 @@ function escapeAttr(str) { return escapeHtml(str); }
    TOP NAV ACTIONS
 ================================================================ */
 document.getElementById('btn-new').addEventListener('click', () => {
-  if (confirm('Start a new blank itinerary? Unsaved changes will be lost.')) {
-    state = createBlankItinerary();
-    activeItineraryId = null;
-    renderBuilder();
-    renderPreview();
+  if (confirm('Start a new blank ' + (currentModule === 'invoice' ? 'invoice' : 'itinerary') + '? Unsaved changes will be lost.')) {
+    if (currentModule === 'invoice') {
+      invoiceState = createBlankInvoice();
+      activeInvoiceId = null;
+      renderInvoiceBuilder();
+      renderInvoicePreview();
+    } else {
+      state = createBlankItinerary();
+      activeItineraryId = null;
+      renderBuilder();
+      renderPreview();
+    }
   }
 });
 
 document.getElementById('btn-save').addEventListener('click', async () => {
-  if (!state.title || state.title === 'Untitled Kashmir Itinerary') {
-    const name = prompt('Enter a name for this itinerary:', state.title);
-    if (!name) return;
-    state.title = name;
-  }
-  const ok = await saveItinerary(state);
-  if (ok) {
-    activeItineraryId = STORAGE_PREFIX + state.id;
-    await refreshSavedList();
-    renderBuilder();
-    showFeedback('✓ Saved: ' + state.title);
+  if (currentModule === 'invoice') {
+    const ok = await saveInvoice(invoiceState);
+    if (ok) {
+      activeInvoiceId = INV_STORAGE_PREFIX + invoiceState.id;
+      await refreshInvoiceList();
+      showFeedback('✓ Invoice saved: ' + invoiceState.invoiceNo);
+    }
+  } else {
+    if (!state.title || state.title === 'Untitled Kashmir Itinerary') {
+      const name = prompt('Enter a name for this itinerary:', state.title);
+      if (!name) return;
+      state.title = name;
+    }
+    const ok = await saveItinerary(state);
+    if (ok) {
+      activeItineraryId = STORAGE_PREFIX + state.id;
+      await refreshSavedList();
+      renderBuilder();
+      showFeedback('✓ Saved: ' + state.title);
+    }
   }
 });
 
 document.getElementById('btn-clear').addEventListener('click', () => {
-  if (confirm('Reset current itinerary to blank? Unsaved changes will be lost.')) {
-    state = createBlankItinerary();
-    activeItineraryId = null;
-    renderBuilder();
-    renderPreview();
+  if (confirm('Reset current ' + (currentModule === 'invoice' ? 'invoice' : 'itinerary') + '? Unsaved changes will be lost.')) {
+    if (currentModule === 'invoice') {
+      invoiceState = createBlankInvoice();
+      activeInvoiceId = null;
+      renderInvoiceBuilder();
+      renderInvoicePreview();
+    } else {
+      state = createBlankItinerary();
+      activeItineraryId = null;
+      renderBuilder();
+      renderPreview();
+    }
   }
 });
 
-document.getElementById('btn-export').addEventListener('click', exportAsHTML);
-document.getElementById('btn-export-pdf').addEventListener('click', exportAsPDF);
-document.getElementById('btn-export-word').addEventListener('click', exportAsWord);
+document.getElementById('btn-export').addEventListener('click', () => {
+  currentModule === 'invoice' ? exportInvoiceAsHTML() : exportAsHTML();
+});
+document.getElementById('btn-export-pdf').addEventListener('click', () => {
+  currentModule === 'invoice' ? exportInvoiceAsPDF() : exportAsPDF();
+});
+document.getElementById('btn-export-word').addEventListener('click', () => {
+  currentModule === 'invoice' ? exportInvoiceAsWord() : exportAsWord();
+});
 
-document.getElementById('btn-copy-rich').addEventListener('click', copyRichHTML);
-document.getElementById('btn-copy-plain').addEventListener('click', copyPlainText);
+document.getElementById('btn-copy-rich').addEventListener('click', () => {
+  currentModule === 'invoice' ? copyInvoiceRichHTML() : copyRichHTML();
+});
+document.getElementById('btn-copy-plain').addEventListener('click', () => {
+  currentModule === 'invoice' ? copyInvoicePlainText() : copyPlainText();
+});
+
+async function copyInvoiceRichHTML() {
+  const html = buildInvoiceHTML();
+  const plain = buildInvoicePlainText();
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      const blob = new Blob([html], { type: 'text/html' });
+      const plainBlob = new Blob([plain], { type: 'text/plain' });
+      await navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': plainBlob })]);
+      showFeedback('✓ Invoice copied — paste into Gmail');
+    } else { throw new Error('Clipboard API unavailable'); }
+  } catch (e) {
+    const el = document.getElementById('preview-content');
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    document.execCommand('copy');
+    sel.removeAllRanges();
+    showFeedback('✓ Copied (fallback)');
+  }
+}
+
+async function copyInvoicePlainText() {
+  try {
+    await navigator.clipboard.writeText(buildInvoicePlainText());
+    showFeedback('✓ Plain text copied');
+  } catch (e) {
+    alert('Could not copy.');
+  }
+}
 
 document.querySelectorAll('.preview-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     previewMode = tab.dataset.mode;
-    renderPreview();
+    currentModule === 'invoice' ? renderInvoicePreview() : renderPreview();
   });
 });
 
 /* ================================================================
-   INIT
+   ▓▓▓▓▓▓▓▓▓▓ INVOICE GENERATOR MODULE ▓▓▓▓▓▓▓▓▓▓
 ================================================================ */
+
+const INV_STORAGE_PREFIX = 'azees_invoice:';
+let invoiceState = createBlankInvoice();
+let activeInvoiceId = null;
+let currentModule = 'itinerary'; // 'itinerary' or 'invoice'
+
+const CURRENCIES = {
+  'INR': { symbol: '₹', code: 'INR', name: 'Indian Rupee', locale: 'en-IN' },
+  'USD': { symbol: '$', code: 'USD', name: 'US Dollar', locale: 'en-US' },
+  'EUR': { symbol: '€', code: 'EUR', name: 'Euro', locale: 'de-DE' },
+  'MUR': { symbol: 'Rs', code: 'MUR', name: 'Mauritian Rupee', locale: 'en-MU' },
+  'MYR': { symbol: 'RM', code: 'MYR', name: 'Malaysian Ringgit', locale: 'ms-MY' }
+};
+
+const PAYMENT_METHODS = {
+  'bank': 'Bank Transfer (NEFT / SWIFT)',
+  'razorpay': 'Razorpay / Stripe Link',
+  'paypal': 'PayPal',
+  'upi': 'WhatsApp / UPI',
+  'cash': 'Cash on Arrival',
+  'juice': 'Juice (Mauritius)'
+};
+
+function createBlankInvoice() {
+  const year = new Date().getFullYear();
+  const seq = String(Math.floor(Math.random() * 9000) + 1000);
+  return {
+    id: 'inv_' + Date.now(),
+    invoiceNo: `INV-${year}-${seq}`,
+    issueDate: new Date().toISOString().split('T')[0],
+    dueDate: '',
+    clientType: 'B2C',
+    clientName: '',
+    clientAddress: '',
+    clientEmail: '',
+    clientPhone: '',
+    clientCountry: '',
+    destination: '',
+    travelStart: '',
+    travelEnd: '',
+    paxCount: '',
+    currency: 'INR',
+    items: [
+      { desc: 'Tour Package — Kashmir 5N/6D', qty: 1, rate: '', amount: '0.00', amountManual: false }
+    ],
+    discount: '',
+    paid: '',
+    paymentMethods: ['bank', 'upi'],
+    bankDetails: {
+      accountName: 'AZEES TRAVELS',
+      accountNo: '',
+      ifsc: '',
+      bankName: '',
+      branch: '',
+      swift: ''
+    },
+    notes: 'Thank you for choosing Azees Travels for your journey.',
+    terms: '50% advance to confirm booking. Balance payable 7 days before travel. Cancellation as per terms.'
+  };
+}
+
+function formatCurrency(amount, currencyCode) {
+  const c = CURRENCIES[currencyCode] || CURRENCIES.INR;
+  if (amount === '' || amount === null || amount === undefined || isNaN(amount)) return c.symbol + ' 0.00';
+  return c.symbol + ' ' + Number(amount).toLocaleString(c.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function calcInvoiceTotals(inv) {
+  const subtotal = inv.items.reduce((sum, it) => {
+    // Use manual amount if it was set, otherwise auto-calc
+    if (it.amountManual && it.amount !== '' && it.amount !== undefined && !isNaN(it.amount)) {
+      return sum + Number(it.amount);
+    }
+    const q = Number(it.qty) || 0;
+    const r = Number(it.rate) || 0;
+    return sum + (q * r);
+  }, 0);
+  const discount = Number(inv.discount) || 0;
+  const grandTotal = Math.max(0, subtotal - discount);
+  const paid = Number(inv.paid) || 0;
+  const balanceDue = grandTotal - paid;
+  return { subtotal, discount, grandTotal, paid, balanceDue };
+}
+
+/* ================================================================
+   INVOICE BUILDER UI
+================================================================ */
+function renderInvoiceBuilder() {
+  const el = document.getElementById('builder');
+  const inv = invoiceState;
+  const totals = calcInvoiceTotals(inv);
+  const cur = CURRENCIES[inv.currency] || CURRENCIES.INR;
+
+  el.innerHTML = `
+    <div class="builder-header">
+      <h1>Invoice ${escapeHtml(inv.invoiceNo)}</h1>
+      <p>${escapeHtml(inv.clientName || 'New Client')} · ${escapeHtml(cur.name)} (${escapeHtml(cur.code)})</p>
+    </div>
+
+    <!-- ===== INVOICE META ===== -->
+    <div class="section">
+      <div class="section-head"><h2>① Invoice Details</h2></div>
+      <div class="section-body">
+        <div class="row row-3">
+          <div class="field"><label>Invoice Number</label><input id="inv-invoiceNo" value="${escapeAttr(inv.invoiceNo)}"/></div>
+          <div class="field"><label>Issue Date</label><input id="inv-issueDate" type="date" value="${escapeAttr(inv.issueDate)}"/></div>
+          <div class="field"><label>Due Date</label><input id="inv-dueDate" type="date" value="${escapeAttr(inv.dueDate)}"/></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Client Type</label>
+            <select id="inv-clientType">
+              <option value="B2C" ${inv.clientType === 'B2C' ? 'selected' : ''}>B2C — Direct Customer</option>
+              <option value="B2B" ${inv.clientType === 'B2B' ? 'selected' : ''}>B2B — Trade Partner</option>
+            </select>
+          </div>
+          <div class="field"><label>Currency</label>
+            <select id="inv-currency">
+              ${Object.entries(CURRENCIES).map(([code, c]) => `<option value="${code}" ${inv.currency === code ? 'selected' : ''}>${c.symbol} ${c.code} — ${c.name}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CLIENT INFO ===== -->
+    <div class="section">
+      <div class="section-head"><h2>② Bill To (Client)</h2></div>
+      <div class="section-body">
+        <div class="row">
+          <div class="field"><label>Client / Company Name</label><input id="inv-clientName" value="${escapeAttr(inv.clientName)}" placeholder="e.g. Mr. Rajesh Sharma / Sharma Travels"/></div>
+          <div class="field"><label>Country</label><input id="inv-clientCountry" value="${escapeAttr(inv.clientCountry)}" placeholder="e.g. India, Mauritius, USA"/></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Email</label><input id="inv-clientEmail" value="${escapeAttr(inv.clientEmail)}" placeholder="client@email.com"/></div>
+          <div class="field"><label>Phone</label><input id="inv-clientPhone" value="${escapeAttr(inv.clientPhone)}" placeholder="+91 / +230 / +1 ..."/></div>
+        </div>
+        <div class="row row-1">
+          <div class="field"><label>Billing Address</label><textarea id="inv-clientAddress" rows="2" placeholder="Full address...">${escapeHtml(inv.clientAddress)}</textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TRAVEL DETAILS ===== -->
+    <div class="section">
+      <div class="section-head"><h2>③ Travel Details</h2></div>
+      <div class="section-body">
+        <div class="row row-3">
+          <div class="field"><label>Destination</label><input id="inv-destination" value="${escapeAttr(inv.destination)}" placeholder="e.g. Kashmir, Maldives"/></div>
+          <div class="field"><label>Travel Start</label><input id="inv-travelStart" type="date" value="${escapeAttr(inv.travelStart)}"/></div>
+          <div class="field"><label>Travel End</label><input id="inv-travelEnd" type="date" value="${escapeAttr(inv.travelEnd)}"/></div>
+        </div>
+        <div class="row row-1">
+          <div class="field"><label>Number of Travellers (Pax)</label><input id="inv-paxCount" value="${escapeAttr(inv.paxCount)}" placeholder="e.g. 4 Adults + 1 Child"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== LINE ITEMS ===== -->
+    <div class="section">
+      <div class="section-head"><h2>④ Invoice Line Items</h2><span class="badge">${inv.items.length} ${inv.items.length === 1 ? 'ITEM' : 'ITEMS'}</span></div>
+      <div class="section-body">
+        <p style="font-size: 11px; color: var(--ink-muted); margin-bottom: 8px; font-style: italic;">
+          💡 Amount auto-calculates from Qty × Rate. You can override it by typing directly. Double-click amount to reset to auto.
+        </p>
+        <table class="price-table" style="margin-bottom: 10px;">
+          <thead>
+            <tr>
+              <th style="text-align:left;">Description</th>
+              <th style="width:70px;">Qty</th>
+              <th style="width:110px;">Rate (${escapeHtml(cur.symbol)})</th>
+              <th style="width:120px;">Amount (${escapeHtml(cur.symbol)})</th>
+              <th style="width:36px;"></th>
+            </tr>
+          </thead>
+          <tbody id="inv-items-tbody">
+            ${inv.items.map((it, i) => {
+              const calcAmount = (Number(it.qty) || 0) * (Number(it.rate) || 0);
+              const displayAmount = it.amountManual ? it.amount : calcAmount.toFixed(2);
+              return `
+                <tr>
+                  <td><input data-item="${i}" data-key="desc" value="${escapeAttr(it.desc)}" style="text-align:left; padding-left:8px;" placeholder="Item description"/></td>
+                  <td><input data-item="${i}" data-key="qty" type="number" min="0" step="1" value="${escapeAttr(it.qty)}"/></td>
+                  <td><input data-item="${i}" data-key="rate" type="number" min="0" step="0.01" value="${escapeAttr(it.rate)}"/></td>
+                  <td><input data-item-amount="${i}" type="number" min="0" step="0.01" value="${escapeAttr(displayAmount)}" style="font-weight:600; color: var(--brand-magenta); ${it.amountManual ? 'background: var(--brand-magenta-light);' : ''}" title="${it.amountManual ? 'Manual override · double-click to reset to auto-calc' : 'Auto-calculated from Qty × Rate. Type to override.'}"/></td>
+                  <td style="text-align:center;"><button data-item-del="${i}" class="icon-btn danger" style="padding: 4px 7px; color: var(--ink); border-color: var(--line);">✕</button></td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+        <button class="add-day" id="inv-add-item" style="background: var(--brand-magenta); color: white;">+ Add Line Item</button>
+      </div>
+    </div>
+
+    <!-- ===== ADJUSTMENTS & PAYMENT ===== -->
+    <div class="section">
+      <div class="section-head"><h2>⑤ Discount & Payment</h2></div>
+      <div class="section-body">
+        <div class="row">
+          <div class="field"><label>Discount (${escapeHtml(cur.symbol)})</label><input id="inv-discount" type="number" min="0" step="0.01" value="${escapeAttr(inv.discount)}" placeholder="0.00"/></div>
+          <div class="field"><label>Amount Already Paid (${escapeHtml(cur.symbol)})</label><input id="inv-paid" type="number" min="0" step="0.01" value="${escapeAttr(inv.paid)}" placeholder="0 if nothing paid yet"/></div>
+        </div>
+
+        <!-- Live totals preview -->
+        <div style="background: var(--bg); padding: 12px 14px; margin-top: 12px; border-left: 3px solid var(--brand-gold);">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 12px;">
+            <div style="color: var(--ink-muted);">Subtotal:</div><div style="text-align: right; font-weight: 600;">${formatCurrency(totals.subtotal, inv.currency)}</div>
+            ${totals.discount > 0 ? `<div style="color: var(--ink-muted);">Discount:</div><div style="text-align: right; color: #c0392b;">− ${formatCurrency(totals.discount, inv.currency)}</div>` : ''}
+            <div style="color: var(--brand-magenta); font-weight: 700; font-size: 14px; padding-top: 6px; border-top: 1px solid var(--line); margin-top: 4px;">GRAND TOTAL:</div>
+            <div style="text-align: right; color: var(--brand-magenta); font-weight: 700; font-size: 14px; padding-top: 6px; border-top: 1px solid var(--line); margin-top: 4px;">${formatCurrency(totals.grandTotal, inv.currency)}</div>
+            ${totals.paid > 0 ? `<div style="color: var(--ink-muted);">Paid:</div><div style="text-align: right; color: #27ae60;">− ${formatCurrency(totals.paid, inv.currency)}</div>` : ''}
+            ${totals.paid > 0 ? `<div style="color: var(--brand-magenta); font-weight: 600;">Balance Due:</div><div style="text-align: right; color: var(--brand-magenta); font-weight: 600;">${formatCurrency(totals.balanceDue, inv.currency)}</div>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAYMENT METHODS ===== -->
+    <div class="section">
+      <div class="section-head"><h2>⑥ Accepted Payment Methods</h2></div>
+      <div class="section-body">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+          ${Object.entries(PAYMENT_METHODS).map(([key, label]) => `
+            <label style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: ${inv.paymentMethods.includes(key) ? 'var(--brand-magenta-light)' : 'var(--bg)'}; border: 1px solid ${inv.paymentMethods.includes(key) ? 'var(--brand-magenta)' : 'var(--line)'}; cursor: pointer; font-size: 12px;">
+              <input type="checkbox" data-pm="${key}" ${inv.paymentMethods.includes(key) ? 'checked' : ''} style="margin: 0; cursor: pointer;"/>
+              <span style="font-weight: ${inv.paymentMethods.includes(key) ? '600' : '400'}; color: ${inv.paymentMethods.includes(key) ? 'var(--brand-magenta)' : 'var(--ink-soft)'};">${escapeHtml(label)}</span>
+            </label>
+          `).join('')}
+        </div>
+
+        ${inv.paymentMethods.includes('bank') ? `
+          <div style="background: var(--brand-gold-light); padding: 14px; border-left: 3px solid var(--brand-gold);">
+            <div style="font-size: 10px; letter-spacing: 2px; color: var(--brand-gold-dark); font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">Bank Transfer Details (shown on invoice)</div>
+            <div class="row row-3">
+              <div class="field"><label>Account Name</label><input id="inv-bank-accountName" value="${escapeAttr(inv.bankDetails.accountName)}"/></div>
+              <div class="field"><label>Account No.</label><input id="inv-bank-accountNo" value="${escapeAttr(inv.bankDetails.accountNo)}"/></div>
+              <div class="field"><label>IFSC Code</label><input id="inv-bank-ifsc" value="${escapeAttr(inv.bankDetails.ifsc)}"/></div>
+            </div>
+            <div class="row row-3">
+              <div class="field"><label>Bank Name</label><input id="inv-bank-bankName" value="${escapeAttr(inv.bankDetails.bankName)}"/></div>
+              <div class="field"><label>Branch</label><input id="inv-bank-branch" value="${escapeAttr(inv.bankDetails.branch)}"/></div>
+              <div class="field"><label>SWIFT (international)</label><input id="inv-bank-swift" value="${escapeAttr(inv.bankDetails.swift)}"/></div>
+            </div>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+
+    <!-- ===== NOTES & TERMS ===== -->
+    <div class="section">
+      <div class="section-head"><h2>⑦ Notes & Terms</h2></div>
+      <div class="section-body">
+        <div class="row">
+          <div class="field"><label>Thank-you Note (top of invoice)</label><textarea id="inv-notes" rows="2">${escapeHtml(inv.notes)}</textarea></div>
+          <div class="field"><label>Terms & Conditions</label><textarea id="inv-terms" rows="2">${escapeHtml(inv.terms)}</textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height: 40px;"></div>
+  `;
+
+  attachInvoiceListeners();
+}
+
+function attachInvoiceListeners() {
+  // Top-level fields — only update preview, not builder, to preserve focus
+  const topFields = ['invoiceNo', 'issueDate', 'dueDate', 'clientType', 'clientName', 'clientCountry',
+    'clientEmail', 'clientPhone', 'clientAddress', 'destination', 'travelStart', 'travelEnd',
+    'paxCount', 'discount', 'paid', 'notes', 'terms'];
+
+  topFields.forEach(key => {
+    const el = document.getElementById('inv-' + key);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      invoiceState[key] = el.value;
+      renderInvoicePreview();
+    });
+  });
+
+  // Currency change — re-render builder (so symbols update everywhere)
+  const curEl = document.getElementById('inv-currency');
+  if (curEl) curEl.addEventListener('change', () => {
+    invoiceState.currency = curEl.value;
+    renderInvoiceBuilder();
+    renderInvoicePreview();
+  });
+
+  // Client type change — re-render so dropdown updates correctly
+  const ctEl = document.getElementById('inv-clientType');
+  if (ctEl) ctEl.addEventListener('change', () => {
+    invoiceState.clientType = ctEl.value;
+    renderInvoicePreview();
+  });
+
+  // Bank detail fields
+  ['accountName', 'accountNo', 'ifsc', 'bankName', 'branch', 'swift'].forEach(key => {
+    const el = document.getElementById('inv-bank-' + key);
+    if (el) el.addEventListener('input', () => {
+      invoiceState.bankDetails[key] = el.value;
+      renderInvoicePreview();
+    });
+  });
+
+  // Line item fields — only update preview AND amount cell, never re-render builder
+  document.querySelectorAll('[data-item]').forEach(el => {
+    el.addEventListener('input', () => {
+      const idx = parseInt(el.dataset.item);
+      const key = el.dataset.key;
+      invoiceState.items[idx][key] = el.value;
+
+      // If qty or rate changed, recalc the amount field for this row (unless manually overridden)
+      if ((key === 'qty' || key === 'rate') && !invoiceState.items[idx].amountManual) {
+        const item = invoiceState.items[idx];
+        const calcAmount = (Number(item.qty) || 0) * (Number(item.rate) || 0);
+        item.amount = calcAmount.toFixed(2);
+        // Update the amount input in DOM directly (don't re-render)
+        const amountEl = document.querySelector(`[data-item-amount="${idx}"]`);
+        if (amountEl) amountEl.value = calcAmount.toFixed(2);
+      }
+
+      renderInvoicePreview();
+    });
+  });
+
+  // Amount field — manual override
+  document.querySelectorAll('[data-item-amount]').forEach(el => {
+    el.addEventListener('input', () => {
+      const idx = parseInt(el.dataset.itemAmount);
+      invoiceState.items[idx].amount = el.value;
+      invoiceState.items[idx].amountManual = true;
+      renderInvoicePreview();
+    });
+  });
+
+  // Reset amount to auto-calc (double-click amount field)
+  document.querySelectorAll('[data-item-amount]').forEach(el => {
+    el.addEventListener('dblclick', () => {
+      const idx = parseInt(el.dataset.itemAmount);
+      const item = invoiceState.items[idx];
+      item.amountManual = false;
+      const calcAmount = (Number(item.qty) || 0) * (Number(item.rate) || 0);
+      item.amount = calcAmount.toFixed(2);
+      el.value = calcAmount.toFixed(2);
+      renderInvoicePreview();
+      showFeedback('Amount reset to auto');
+    });
+  });
+
+  // Delete item — needs full re-render since rows change
+  document.querySelectorAll('[data-item-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.itemDel);
+      if (invoiceState.items.length > 1) {
+        invoiceState.items.splice(idx, 1);
+        renderInvoiceBuilder();
+        renderInvoicePreview();
+      } else {
+        alert('At least one line item is required.');
+      }
+    });
+  });
+
+  // Add item — needs full re-render to show new row
+  const addBtn = document.getElementById('inv-add-item');
+  if (addBtn) addBtn.addEventListener('click', () => {
+    invoiceState.items.push({ desc: '', qty: 1, rate: '', amount: '0.00', amountManual: false });
+    renderInvoiceBuilder();
+    renderInvoicePreview();
+  });
+
+  // Payment method toggles
+  document.querySelectorAll('[data-pm]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const key = cb.dataset.pm;
+      if (cb.checked) {
+        if (!invoiceState.paymentMethods.includes(key)) invoiceState.paymentMethods.push(key);
+      } else {
+        invoiceState.paymentMethods = invoiceState.paymentMethods.filter(p => p !== key);
+      }
+      renderInvoiceBuilder();
+      renderInvoicePreview();
+    });
+  });
+}
+
+/* ================================================================
+   INVOICE PREVIEW (Email + PDF body)
+================================================================ */
+function buildInvoiceHTML() {
+  const inv = invoiceState;
+  const totals = calcInvoiceTotals(inv);
+  const cur = CURRENCIES[inv.currency] || CURRENCIES.INR;
+  const fmt = (v) => formatCurrency(v, inv.currency);
+
+  let html = `<div class="email-output" style="padding: 32px 28px; max-width: 760px;">`;
+
+  // Header — Azees branding
+  html += `<table style="width: 100%; margin-bottom: 20px; border-bottom: 3px solid #ba9c62; padding-bottom: 14px;">
+    <tr>
+      <td style="vertical-align: middle; width: 60%;">
+        <table><tr>
+          <td style="width: 70px; padding-right: 14px;">
+            <img src="${AZEES_LOGO}" alt="Azees Travels" style="width: 60px; height: 60px; display: block; object-fit: contain;"/>
+          </td>
+          <td style="vertical-align: middle;">
+            <div style="font-size: 20px; color: #7c236a; letter-spacing: 4px; font-weight: 300;">AZEES TRAVELS</div>
+            <div style="font-size: 9px; color: #ba9c62; letter-spacing: 2.5px; font-weight: 700; margin-top: 3px; text-transform: uppercase;">Curated Journeys · Since 2022</div>
+          </td>
+        </tr></table>
+      </td>
+      <td style="vertical-align: top; text-align: right; width: 40%;">
+        <div style="background: #7c236a; color: white; display: inline-block; padding: 10px 18px; font-size: 22px; letter-spacing: 3px; font-weight: 300;">INVOICE</div>
+        <div style="font-size: 10px; color: #ba9c62; letter-spacing: 2px; font-weight: 700; margin-top: 6px;">${escapeHtml(inv.clientType)} · ${escapeHtml(cur.code)}</div>
+      </td>
+    </tr>
+  </table>`;
+
+  // Invoice meta + Bill-to grid
+  html += `<table style="width: 100%; margin-bottom: 22px;">
+    <tr>
+      <!-- LEFT: Bill To -->
+      <td style="vertical-align: top; width: 60%; padding-right: 18px;">
+        <div style="font-size: 9px; letter-spacing: 2.5px; color: #7c236a; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Bill To</div>
+        <div style="font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px;">${escapeHtml(inv.clientName || '—')}</div>
+        ${inv.clientAddress ? `<div style="font-size: 11px; color: #4a4a4a; line-height: 1.5;">${escapeHtml(inv.clientAddress).replace(/\n/g, '<br/>')}</div>` : ''}
+        ${inv.clientCountry ? `<div style="font-size: 11px; color: #4a4a4a;">${escapeHtml(inv.clientCountry)}</div>` : ''}
+        ${inv.clientEmail ? `<div style="font-size: 11px; color: #8e7547; margin-top: 4px;">${escapeHtml(inv.clientEmail)}</div>` : ''}
+        ${inv.clientPhone ? `<div style="font-size: 11px; color: #8e7547;">${escapeHtml(inv.clientPhone)}</div>` : ''}
+      </td>
+      <!-- RIGHT: Invoice meta -->
+      <td style="vertical-align: top; width: 40%; background: #faf8f5; padding: 12px 14px; border-left: 3px solid #ba9c62;">
+        <table style="width: 100%; font-size: 11px;">
+          <tr><td style="color: #888; padding: 2px 0; letter-spacing: 1px;">INVOICE NO</td><td style="text-align: right; font-weight: 700; color: #7c236a;">${escapeHtml(inv.invoiceNo)}</td></tr>
+          <tr><td style="color: #888; padding: 2px 0; letter-spacing: 1px;">ISSUE DATE</td><td style="text-align: right; font-weight: 600;">${escapeHtml(inv.issueDate)}</td></tr>
+          ${inv.dueDate ? `<tr><td style="color: #888; padding: 2px 0; letter-spacing: 1px;">DUE DATE</td><td style="text-align: right; font-weight: 600;">${escapeHtml(inv.dueDate)}</td></tr>` : ''}
+          ${inv.destination ? `<tr><td style="color: #888; padding: 2px 0; letter-spacing: 1px;">DESTINATION</td><td style="text-align: right; font-weight: 600;">${escapeHtml(inv.destination)}</td></tr>` : ''}
+          ${inv.travelStart || inv.travelEnd ? `<tr><td style="color: #888; padding: 2px 0; letter-spacing: 1px;">TRAVEL</td><td style="text-align: right; font-weight: 600;">${escapeHtml(inv.travelStart || '')}${inv.travelEnd ? ' → ' + escapeHtml(inv.travelEnd) : ''}</td></tr>` : ''}
+          ${inv.paxCount ? `<tr><td style="color: #888; padding: 2px 0; letter-spacing: 1px;">PAX</td><td style="text-align: right; font-weight: 600;">${escapeHtml(inv.paxCount)}</td></tr>` : ''}
+        </table>
+      </td>
+    </tr>
+  </table>`;
+
+  // Thank-you note
+  if (inv.notes && inv.notes.trim()) {
+    html += `<div style="background: #f5e8f1; padding: 10px 14px; border-left: 3px solid #7c236a; font-size: 11.5px; color: #5a1850; font-style: italic; margin-bottom: 18px;">${escapeHtml(inv.notes).replace(/\n/g, '<br/>')}</div>`;
+  }
+
+  // Line items table
+  html += `<table style="width: 100%; border-collapse: collapse; margin-bottom: 14px;">
+    <thead>
+      <tr>
+        <th style="background: #7c236a; color: white; padding: 8px 10px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid #5a1850; text-align: left;">Description</th>
+        <th style="background: #7c236a; color: white; padding: 8px 6px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid #5a1850; width: 60px;">Qty</th>
+        <th style="background: #7c236a; color: white; padding: 8px 10px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid #5a1850; width: 110px; text-align: right;">Rate</th>
+        <th style="background: #7c236a; color: white; padding: 8px 10px; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; border: 1px solid #5a1850; width: 130px; text-align: right;">Amount</th>
+      </tr>
+    </thead>
+    <tbody>`;
+  inv.items.forEach((it, i) => {
+    const calcAmount = (Number(it.qty) || 0) * (Number(it.rate) || 0);
+    const amount = it.amountManual && it.amount !== '' && !isNaN(it.amount) ? Number(it.amount) : calcAmount;
+    html += `<tr style="background: ${i % 2 === 0 ? 'white' : '#faf8f5'};">
+      <td style="padding: 8px 10px; border: 1px solid #e8e3da; font-size: 11.5px; color: #1a1a1a;">${escapeHtml(it.desc || '—')}</td>
+      <td style="padding: 8px 6px; border: 1px solid #e8e3da; text-align: center; font-size: 11.5px;">${escapeHtml(it.qty || 0)}</td>
+      <td style="padding: 8px 10px; border: 1px solid #e8e3da; text-align: right; font-size: 11.5px;">${fmt(it.rate)}</td>
+      <td style="padding: 8px 10px; border: 1px solid #e8e3da; text-align: right; font-size: 11.5px; font-weight: 600;">${fmt(amount)}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+
+  // Totals
+  html += `<table style="width: 100%; margin-bottom: 18px;">
+    <tr><td style="width: 55%;"></td>
+      <td>
+        <table style="width: 100%; font-size: 12px;">
+          <tr><td style="padding: 4px 10px; color: #888; text-align: right;">Subtotal:</td><td style="padding: 4px 10px; text-align: right; font-weight: 600; width: 130px;">${fmt(totals.subtotal)}</td></tr>
+          ${totals.discount > 0 ? `<tr><td style="padding: 4px 10px; color: #888; text-align: right;">Discount:</td><td style="padding: 4px 10px; text-align: right; color: #c0392b; font-weight: 600;">− ${fmt(totals.discount)}</td></tr>` : ''}
+          <tr><td style="padding: 8px 10px; background: #7c236a; color: white; text-align: right; font-size: 13px; letter-spacing: 1px; font-weight: 700; text-transform: uppercase;">Grand Total:</td><td style="padding: 8px 10px; background: #7c236a; color: white; text-align: right; font-size: 16px; font-weight: 700;">${fmt(totals.grandTotal)}</td></tr>
+          ${totals.paid > 0 ? `<tr><td style="padding: 4px 10px; color: #27ae60; text-align: right; font-weight: 600;">Paid:</td><td style="padding: 4px 10px; text-align: right; color: #27ae60; font-weight: 600;">− ${fmt(totals.paid)}</td></tr>` : ''}
+          ${totals.paid > 0 ? `<tr><td style="padding: 8px 10px; background: #ba9c62; color: #1a1a1a; text-align: right; font-size: 12px; letter-spacing: 1px; font-weight: 700; text-transform: uppercase;">Balance Due:</td><td style="padding: 8px 10px; background: #ba9c62; color: #1a1a1a; text-align: right; font-size: 14px; font-weight: 700;">${fmt(totals.balanceDue)}</td></tr>` : ''}
+        </table>
+      </td>
+    </tr>
+  </table>`;
+
+  // Payment methods
+  if (inv.paymentMethods.length) {
+    html += `<div style="margin-bottom: 16px;">
+      <div style="font-size: 10px; letter-spacing: 2.5px; color: #7c236a; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; border-left: 3px solid #ba9c62; padding-left: 10px;">Payment Methods Accepted</div>
+      <div style="background: #faf8f5; padding: 10px 14px; font-size: 11.5px; color: #4a4a4a;">`;
+    inv.paymentMethods.forEach((key, idx) => {
+      html += `<span style="display: inline-block; margin-right: 14px; padding: 3px 0;"><strong style="color: #7c236a;">${idx + 1}.</strong> ${escapeHtml(PAYMENT_METHODS[key])}</span>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Bank details (if bank is selected)
+  if (inv.paymentMethods.includes('bank') && (inv.bankDetails.accountNo || inv.bankDetails.ifsc)) {
+    const b = inv.bankDetails;
+    html += `<div style="margin-bottom: 16px; background: #faf4e8; padding: 14px; border-left: 3px solid #ba9c62;">
+      <div style="font-size: 10px; letter-spacing: 2.5px; color: #8e7547; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">Bank Transfer Details</div>
+      <table style="width: 100%; font-size: 11px; color: #1a1a1a;">
+        ${b.accountName ? `<tr><td style="padding: 2px 12px 2px 0; color: #888; width: 130px;">Account Name:</td><td style="padding: 2px 0; font-weight: 600;">${escapeHtml(b.accountName)}</td></tr>` : ''}
+        ${b.accountNo ? `<tr><td style="padding: 2px 12px 2px 0; color: #888;">Account No.:</td><td style="padding: 2px 0; font-weight: 600;">${escapeHtml(b.accountNo)}</td></tr>` : ''}
+        ${b.bankName ? `<tr><td style="padding: 2px 12px 2px 0; color: #888;">Bank:</td><td style="padding: 2px 0; font-weight: 600;">${escapeHtml(b.bankName)}${b.branch ? ', ' + escapeHtml(b.branch) : ''}</td></tr>` : ''}
+        ${b.ifsc ? `<tr><td style="padding: 2px 12px 2px 0; color: #888;">IFSC Code:</td><td style="padding: 2px 0; font-weight: 600;">${escapeHtml(b.ifsc)}</td></tr>` : ''}
+        ${b.swift ? `<tr><td style="padding: 2px 12px 2px 0; color: #888;">SWIFT (Intl):</td><td style="padding: 2px 0; font-weight: 600;">${escapeHtml(b.swift)}</td></tr>` : ''}
+      </table>
+    </div>`;
+  }
+
+  // Terms
+  if (inv.terms && inv.terms.trim()) {
+    html += `<div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid #e8e3da;">
+      <div style="font-size: 10px; letter-spacing: 2px; color: #888; font-weight: 700; text-transform: uppercase; margin-bottom: 4px;">Terms & Conditions</div>
+      <div style="font-size: 10.5px; color: #6a6a6a; line-height: 1.6;">${escapeHtml(inv.terms).replace(/\n/g, '<br/>')}</div>
+    </div>`;
+  }
+
+  // Signature / contact — multi-office footer
+  html += `<div style="margin-top: 24px; padding-top: 16px; border-top: 2px solid #ba9c62;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr>
+        <!-- INDIA HQ -->
+        <td style="width: 50%; vertical-align: top; padding: 4px 18px 4px 0; border-right: 1px solid #e8e3da;">
+          <div style="font-size: 9px; letter-spacing: 2.5px; color: #7c236a; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">
+            🇮🇳 &nbsp;India · Head Office
+          </div>
+          <div style="font-size: 11px; color: #4a4a4a; line-height: 1.6;">
+            Rangpura, Ellahibagh<br/>
+            Srinagar 190020, Jammu &amp; Kashmir<br/>
+            <strong style="color: #8e7547;">M:</strong> +91 84910 64038 &nbsp;·&nbsp; +91 96222 59639<br/>
+            <strong style="color: #8e7547;">E:</strong> azeestravelsales@gmail.com<br/>
+            <strong style="color: #8e7547;">E:</strong> info@azeestravels.com
+          </div>
+        </td>
+        <!-- MAURITIUS -->
+        <td style="width: 50%; vertical-align: top; padding: 4px 0 4px 18px;">
+          <div style="font-size: 9px; letter-spacing: 2.5px; color: #7c236a; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">
+            🇲🇺 &nbsp;Mauritius · Branch Office
+          </div>
+          <div style="font-size: 11px; color: #4a4a4a; line-height: 1.6;">
+            Vacoas-Phoenix<br/>
+            Republic of Mauritius<br/>
+            <strong style="color: #8e7547;">M:</strong> +230 5965 0810<br/>
+            <strong style="color: #8e7547;">E:</strong> mauritius@azeestravels.com
+          </div>
+        </td>
+      </tr>
+    </table>
+    <div style="text-align: center; padding-top: 14px; margin-top: 14px; border-top: 1px solid #e8e3da; font-size: 11px; color: #4a4a4a;">
+      <strong style="color: #7c236a; font-size: 12px; letter-spacing: 1.5px;">AZEES TRAVELS</strong>
+      &nbsp;·&nbsp; <span style="color: #8e7547; font-weight: 600;">Curated Journeys Since 2022</span>
+      &nbsp;·&nbsp; <span style="color: #8e7547;">www.azeestravels.com</span>
+    </div>
+  </div>`;
+
+  html += `</div>`;
+  return html;
+}
+
+function renderInvoicePreview() {
+  const el = document.getElementById('preview-content');
+  if (previewMode === 'email') {
+    el.className = 'preview-content email-mode';
+    el.innerHTML = buildInvoiceHTML();
+  } else {
+    el.className = 'preview-content';
+    el.innerHTML = '<div class="plain-output">' + escapeHtml(buildInvoicePlainText()) + '</div>';
+  }
+}
+
+function buildInvoicePlainText() {
+  const inv = invoiceState;
+  const totals = calcInvoiceTotals(inv);
+  const cur = CURRENCIES[inv.currency] || CURRENCIES.INR;
+  const fmt = (v) => formatCurrency(v, inv.currency);
+
+  let out = '';
+  out += '═══════════════════════════════════════\n';
+  out += '   AZEES TRAVELS · INVOICE\n';
+  out += '═══════════════════════════════════════\n\n';
+  out += 'Invoice No   : ' + inv.invoiceNo + '\n';
+  out += 'Issue Date   : ' + inv.issueDate + '\n';
+  if (inv.dueDate) out += 'Due Date     : ' + inv.dueDate + '\n';
+  out += 'Currency     : ' + cur.code + ' (' + cur.name + ')\n';
+  out += 'Type         : ' + inv.clientType + '\n\n';
+
+  out += '─── BILL TO ───\n';
+  out += inv.clientName + '\n';
+  if (inv.clientAddress) out += inv.clientAddress + '\n';
+  if (inv.clientCountry) out += inv.clientCountry + '\n';
+  if (inv.clientEmail) out += inv.clientEmail + '\n';
+  if (inv.clientPhone) out += inv.clientPhone + '\n';
+  out += '\n';
+
+  if (inv.destination || inv.travelStart) {
+    out += '─── TRAVEL ───\n';
+    if (inv.destination) out += 'Destination: ' + inv.destination + '\n';
+    if (inv.travelStart) out += 'Dates: ' + inv.travelStart + (inv.travelEnd ? ' to ' + inv.travelEnd : '') + '\n';
+    if (inv.paxCount) out += 'Pax: ' + inv.paxCount + '\n';
+    out += '\n';
+  }
+
+  out += '─── LINE ITEMS ───\n\n';
+  inv.items.forEach((it, i) => {
+    const calcAmount = (Number(it.qty) || 0) * (Number(it.rate) || 0);
+    const amount = it.amountManual && it.amount !== '' && !isNaN(it.amount) ? Number(it.amount) : calcAmount;
+    out += (i + 1) + '. ' + (it.desc || '—') + '\n';
+    out += '   Qty: ' + (it.qty || 0) + ' × ' + fmt(it.rate) + ' = ' + fmt(amount) + '\n';
+  });
+  out += '\n';
+
+  out += '─── TOTALS ───\n';
+  out += 'Subtotal     : ' + fmt(totals.subtotal) + '\n';
+  if (totals.discount > 0) out += 'Discount     : − ' + fmt(totals.discount) + '\n';
+  out += '═════════════════════════\n';
+  out += 'GRAND TOTAL  : ' + fmt(totals.grandTotal) + '\n';
+  if (totals.paid > 0) {
+    out += 'Paid         : − ' + fmt(totals.paid) + '\n';
+    out += 'BALANCE DUE  : ' + fmt(totals.balanceDue) + '\n';
+  }
+  out += '\n';
+
+  if (inv.paymentMethods.length) {
+    out += '─── PAYMENT METHODS ───\n';
+    inv.paymentMethods.forEach((key, i) => out += (i + 1) + '. ' + PAYMENT_METHODS[key] + '\n');
+    out += '\n';
+  }
+
+  if (inv.paymentMethods.includes('bank') && inv.bankDetails.accountNo) {
+    const b = inv.bankDetails;
+    out += '─── BANK DETAILS ───\n';
+    if (b.accountName) out += 'A/C Name : ' + b.accountName + '\n';
+    if (b.accountNo) out += 'A/C No.  : ' + b.accountNo + '\n';
+    if (b.bankName) out += 'Bank     : ' + b.bankName + (b.branch ? ', ' + b.branch : '') + '\n';
+    if (b.ifsc) out += 'IFSC     : ' + b.ifsc + '\n';
+    if (b.swift) out += 'SWIFT    : ' + b.swift + '\n';
+    out += '\n';
+  }
+
+  if (inv.terms) out += '─── TERMS ───\n' + inv.terms + '\n\n';
+
+  out += '═══════════════════════════════════════\n';
+  out += 'AZEES TRAVELS · Curated Journeys Since 2022\n';
+  out += '═══════════════════════════════════════\n\n';
+  out += '🇮🇳 INDIA · HEAD OFFICE\n';
+  out += 'Rangpura, Ellahibagh, Srinagar 190020\n';
+  out += 'Jammu & Kashmir, India\n';
+  out += 'M: +91 84910 64038 · +91 96222 59639\n';
+  out += 'E: azeestravelsales@gmail.com\n';
+  out += 'E: info@azeestravels.com\n\n';
+  out += '🇲🇺 MAURITIUS · BRANCH OFFICE\n';
+  out += 'Vacoas-Phoenix, Republic of Mauritius\n';
+  out += 'M: +230 5965 0810\n';
+  out += 'E: mauritius@azeestravels.com\n\n';
+  out += 'W: www.azeestravels.com\n';
+  return out;
+}
+
+/* ================================================================
+   INVOICE SAVE / LOAD
+================================================================ */
+async function saveInvoice(inv) {
+  const key = INV_STORAGE_PREFIX + inv.id;
+  try {
+    await _storage.set(key, JSON.stringify(inv));
+    return true;
+  } catch (e) {
+    alert('Could not save invoice: ' + e.message);
+    return false;
+  }
+}
+
+async function loadInvoice(key) {
+  try {
+    const result = await _storage.get(key);
+    return result ? JSON.parse(result.value) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function deleteInvoice(key) {
+  try {
+    await _storage.delete(key);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+async function loadInvoiceList() {
+  try {
+    const result = await _storage.list(INV_STORAGE_PREFIX);
+    return result?.keys || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+async function refreshInvoiceList() {
+  const ul = document.getElementById('saved-list');
+  const keys = await loadInvoiceList();
+  if (!keys.length) {
+    ul.innerHTML = '<li class="saved-empty">No saved invoices yet. Build one and click Save.</li>';
+    return;
+  }
+  const items = [];
+  for (const key of keys) {
+    const inv = await loadInvoice(key);
+    if (inv) items.push({ key, inv });
+  }
+  items.sort((a, b) => (b.inv.id || '').localeCompare(a.inv.id || ''));
+  ul.innerHTML = items.map(({ key, inv }) => {
+    const t = calcInvoiceTotals(inv);
+    const cur = CURRENCIES[inv.currency] || CURRENCIES.INR;
+    return `
+      <li class="saved-item" data-inv-key="${escapeAttr(key)}">
+        <div class="saved-item-title">${escapeHtml(inv.invoiceNo)}</div>
+        <div class="saved-item-meta">${escapeHtml(inv.clientName || 'No client')} · ${cur.symbol}${Math.round(t.grandTotal).toLocaleString()}</div>
+        <button class="saved-item-delete" data-inv-del-key="${escapeAttr(key)}" title="Delete">✕</button>
+      </li>
+    `;
+  }).join('');
+
+  ul.querySelectorAll('.saved-item').forEach(li => {
+    li.addEventListener('click', async (e) => {
+      if (e.target.closest('.saved-item-delete')) return;
+      const key = li.dataset.invKey;
+      const inv = await loadInvoice(key);
+      if (inv) {
+        invoiceState = inv;
+        activeInvoiceId = key;
+        renderInvoiceBuilder();
+        renderInvoicePreview();
+        showFeedback('✓ Loaded: ' + inv.invoiceNo);
+      }
+    });
+  });
+
+  ul.querySelectorAll('[data-inv-del-key]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.invDelKey;
+      if (confirm('Delete this invoice permanently?')) {
+        await deleteInvoice(key);
+        await refreshInvoiceList();
+        showFeedback('✓ Deleted');
+      }
+    });
+  });
+}
+
+/* ================================================================
+   INVOICE EXPORTS (PDF / Word)
+================================================================ */
+function exportInvoiceAsPDF() {
+  const filename = (invoiceState.invoiceNo || 'invoice').replace(/[^a-z0-9]/gi, '-');
+  const content = buildInvoiceHTML();
+
+  const printHTML = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"/>
+<title>${escapeHtml(invoiceState.invoiceNo)}</title>
+<style>
+  @page { size: A4 portrait; margin: 12mm; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0; background: white; color: #2a2a2a; font-size: 12px; line-height: 1.5; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+  table { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .print-controls { background: #1a1a1a; color: white; padding: 14px 20px; text-align: center; font-family: 'Helvetica Neue', Arial, sans-serif; position: sticky; top: 0; z-index: 1000; }
+  .print-controls button { background: #7c236a; color: white; border: none; padding: 10px 24px; font-size: 13px; letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase; font-weight: 700; font-family: inherit; margin: 0 6px; }
+  .print-controls button:hover { background: #5a1850; }
+  .print-controls button.close { background: transparent; border: 1px solid #555; }
+  .print-controls .hint { color: #ba9c62; font-size: 11px; letter-spacing: 1.5px; margin-top: 6px; text-transform: uppercase; }
+  @media print {
+    .print-controls { display: none !important; }
+    body { padding: 0; margin: 0; }
+  }
+</style>
+</head><body>
+<div class="print-controls">
+  <button onclick="window.print()">🖨️ Save as PDF / Print</button>
+  <button class="close" onclick="window.close()">Close</button>
+  <div class="hint">In the print dialog → Destination → Save as PDF → Save</div>
+</div>
+${content}
+<scr` + `ipt>
+  window.addEventListener('load', function() {
+    setTimeout(function() { window.print(); }, 600);
+  });
+</scr` + `ipt>
+</body></html>`;
+
+  const win = window.open('', '_blank', 'width=850,height=900');
+  if (!win) {
+    alert('Please allow pop-ups for this site, then click PDF again.');
+    return;
+  }
+  win.document.write(printHTML);
+  win.document.close();
+  win.document.title = filename + '.pdf';
+  showFeedback('✓ Print dialog opened — choose "Save as PDF"');
+}
+
+function exportInvoiceAsWord() {
+  const wordHTML = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><title>${escapeHtml(invoiceState.invoiceNo)}</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
+<style>@page { size: A4 portrait; margin: 1.5cm; } body { font-family: 'Calibri', 'Helvetica Neue', Arial, sans-serif; font-size: 11pt; color: #2a2a2a; }</style>
+</head><body>${buildInvoiceHTML()}</body></html>`;
+  const blob = new Blob(['\ufeff', wordHTML], { type: 'application/msword;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (invoiceState.invoiceNo || 'invoice').replace(/[^a-z0-9]/gi, '-') + '.doc';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+  showFeedback('✓ Invoice Word doc downloaded');
+}
+
+function exportInvoiceAsHTML() {
+  const fullDoc = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"/><title>${escapeHtml(invoiceState.invoiceNo)} — Azees Travels</title>
+<style>body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 30px auto; max-width: 820px; padding: 0 20px; background: #fff; color: #2a2a2a; }</style>
+</head><body>${buildInvoiceHTML()}</body></html>`;
+  const blob = new Blob([fullDoc], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (invoiceState.invoiceNo || 'invoice').replace(/[^a-z0-9]/gi, '-') + '.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  showFeedback('✓ Invoice HTML downloaded');
+}
+
+/* ================================================================
+   MODULE SWITCHING
+================================================================ */
+function switchModule(mod) {
+  currentModule = mod;
+  document.querySelectorAll('.mod-btn').forEach(b => b.classList.toggle('active', b.dataset.mod === mod));
+
+  if (mod === 'itinerary') {
+    renderBuilder();
+    renderPreview();
+    refreshSavedList();
+    document.querySelector('.sidebar h3').textContent = '📋 Quick Templates';
+    document.querySelectorAll('.sidebar h3')[1].textContent = '💼 Saved Itineraries';
+    document.querySelector('.quick-templates').style.display = '';
+  } else {
+    renderInvoiceBuilder();
+    renderInvoicePreview();
+    refreshInvoiceList();
+    document.querySelector('.sidebar h3').textContent = '🧾 Invoice Tools';
+    document.querySelectorAll('.sidebar h3')[1].textContent = '📑 Saved Invoices';
+    document.querySelector('.quick-templates').style.display = 'none';
+  }
+}
+
+document.getElementById('mod-itinerary').addEventListener('click', () => switchModule('itinerary'));
+document.getElementById('mod-invoice').addEventListener('click', () => switchModule('invoice'));
+
+/* ================================================================
+   ▓▓▓▓▓▓▓▓▓▓ END INVOICE MODULE ▓▓▓▓▓▓▓▓▓▓
+================================================================ */
+
+
 (async function init() {
+  // Set logo from base64 constant
+  const navLogo = document.getElementById('nav-logo-img');
+  if (navLogo) navLogo.src = AZEES_LOGO;
+
   renderTemplates();
   renderBuilder();
   renderPreview();
