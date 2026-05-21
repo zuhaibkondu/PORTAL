@@ -742,7 +742,211 @@
     border: 1px dashed var(--line);
   }
 
-  /* Scrollbar polish */
+  /* ============ MOBILE RESPONSIVE ============ */
+  @media (max-width: 900px) {
+    /* Top nav stacks vertically */
+    .topnav {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      padding: 10px 14px;
+    }
+    .nav-brand {
+      justify-content: center;
+    }
+    .nav-title { font-size: 10px; letter-spacing: 3px; }
+    .nav-sub { font-size: 8px; letter-spacing: 1.5px; }
+
+    .module-switcher {
+      width: 100%;
+      justify-content: center;
+    }
+    .mod-btn {
+      flex: 1;
+      padding: 10px 8px;
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+
+    .nav-actions {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+    }
+    .nav-btn {
+      padding: 8px 11px;
+      font-size: 10px;
+      letter-spacing: 1px;
+      flex: 1 1 auto;
+      min-width: 70px;
+    }
+
+    /* Switch from 3-column grid to single column stack */
+    .app {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto auto;
+      height: auto;
+      overflow: visible;
+    }
+
+    /* Sidebar becomes a top bar with horizontal scroll */
+    .sidebar {
+      border-right: none;
+      border-bottom: 2px solid var(--brand-gold);
+      max-height: 250px;
+      padding: 14px;
+    }
+    .sidebar h3 {
+      font-size: 9px;
+      letter-spacing: 2px;
+    }
+    .new-btn {
+      padding: 10px;
+      font-size: 10.5px;
+      margin-bottom: 16px;
+    }
+    .template-btn {
+      padding: 8px 10px;
+      font-size: 11px;
+    }
+    .saved-item {
+      padding: 8px 10px;
+      font-size: 11px;
+    }
+
+    /* Builder full width */
+    .builder {
+      padding: 14px 12px;
+    }
+    .builder-header {
+      padding: 14px 16px;
+    }
+    .builder-header h1 {
+      font-size: 15px;
+    }
+    .builder-header p {
+      font-size: 9.5px;
+    }
+
+    /* Form rows stack on mobile */
+    .row, .row.row-3 {
+      grid-template-columns: 1fr !important;
+      gap: 8px;
+    }
+
+    .section-head {
+      padding: 10px 14px;
+    }
+    .section-head h2 {
+      font-size: 10px;
+      letter-spacing: 1.8px;
+    }
+    .section-body {
+      padding: 12px 14px;
+    }
+
+    .field label {
+      font-size: 9px;
+      letter-spacing: 1.5px;
+    }
+    .field input, .field textarea, .field select {
+      font-size: 14px;
+      padding: 9px 10px;
+    }
+
+    /* Day cards more compact */
+    .day-card-head {
+      padding: 7px 10px;
+      flex-wrap: wrap;
+    }
+    .day-card-num {
+      width: 26px;
+      height: 26px;
+      font-size: 11px;
+    }
+    .day-card-title {
+      font-size: 11px;
+      margin: 0 8px;
+    }
+    .day-card-body {
+      padding: 10px;
+    }
+    .icon-btn {
+      padding: 3px 7px;
+      font-size: 9px;
+    }
+    .add-day {
+      padding: 10px;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+    }
+
+    /* Pricing table — make it scrollable horizontally on mobile */
+    .price-table {
+      font-size: 11px;
+    }
+    .price-table th, .price-table td {
+      padding: 5px 6px;
+    }
+    .price-table input {
+      font-size: 11px;
+      padding: 4px;
+    }
+
+    /* Preview panel — push to bottom, fixed height */
+    .preview {
+      padding: 14px;
+      max-height: 70vh;
+      border-top: 2px solid var(--brand-gold);
+    }
+    .preview-tabs {
+      margin-bottom: 10px;
+    }
+    .preview-tab {
+      padding: 7px 10px;
+      font-size: 9.5px;
+      letter-spacing: 1.2px;
+      flex: 1;
+    }
+    .preview-content {
+      padding: 14px;
+      font-size: 11px;
+    }
+    .preview-actions {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+    .copy-btn {
+      padding: 11px;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+    }
+
+    /* Email output (preview) padding tighter on mobile */
+    .email-output {
+      padding: 14px !important;
+      font-size: 11px;
+    }
+
+    /* Two-column inclusions grid stacks on mobile */
+    .email-output .inc-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  /* Extra small phones (< 480px) */
+  @media (max-width: 480px) {
+    .nav-actions { gap: 4px; }
+    .nav-btn { padding: 7px 8px; font-size: 9px; min-width: 60px; }
+    .nav-logo { width: 36px; height: 36px; }
+    .nav-title { font-size: 9px; letter-spacing: 2.5px; }
+    .nav-sub { display: none; }
+
+    .builder { padding: 10px 8px; }
+    .section-body { padding: 10px 12px; }
+    .preview { padding: 10px; }
+  }
+
   ::-webkit-scrollbar { width: 9px; height: 9px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
