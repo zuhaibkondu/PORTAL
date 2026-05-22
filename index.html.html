@@ -30,13 +30,14 @@
 
   /* ============ TOP NAV ============ */
   .topnav {
-    background: var(--ink);
-    color: white;
+    background: white;
+    color: var(--ink);
     padding: 14px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 3px solid var(--brand-gold);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -58,12 +59,13 @@
   .nav-title {
     font-size: 11px;
     letter-spacing: 4px;
-    font-weight: 600;
+    font-weight: 700;
+    color: var(--brand-magenta);
   }
   .nav-sub {
     font-size: 8.5px;
     letter-spacing: 2.5px;
-    color: var(--brand-gold);
+    color: var(--brand-gold-dark);
     margin-top: 2px;
   }
   .nav-actions {
@@ -72,8 +74,8 @@
   }
   .nav-btn {
     background: transparent;
-    color: white;
-    border: 1px solid #444;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
     padding: 7px 14px;
     font-size: 11px;
     letter-spacing: 1.5px;
@@ -86,10 +88,12 @@
   .nav-btn:hover {
     background: var(--brand-magenta);
     border-color: var(--brand-magenta);
+    color: white;
   }
   .nav-btn.primary {
     background: var(--brand-magenta);
     border-color: var(--brand-magenta);
+    color: white;
   }
   .nav-btn.primary:hover {
     background: var(--brand-magenta-dark);
@@ -108,13 +112,13 @@
   .module-switcher {
     display: flex;
     gap: 4px;
-    background: rgba(255,255,255,0.05);
+    background: var(--bg);
     padding: 4px;
-    border: 1px solid #333;
+    border: 1px solid var(--line);
   }
   .mod-btn {
     background: transparent;
-    color: #aaa;
+    color: var(--ink-muted);
     border: none;
     padding: 8px 16px;
     font-size: 11px;
@@ -126,12 +130,12 @@
     transition: all 0.2s;
   }
   .mod-btn:hover {
-    color: white;
-    background: rgba(255,255,255,0.05);
+    color: var(--ink);
+    background: white;
   }
   .mod-btn.active {
-    background: var(--brand-gold);
-    color: var(--ink);
+    background: var(--brand-magenta);
+    color: white;
   }
 
   /* ============ LAYOUT ============ */
@@ -760,12 +764,15 @@
     .module-switcher {
       width: 100%;
       justify-content: center;
+      flex-wrap: wrap;
+      gap: 2px;
     }
     .mod-btn {
-      flex: 1;
-      padding: 10px 8px;
-      font-size: 10px;
-      letter-spacing: 1px;
+      flex: 1 1 calc(50% - 2px);
+      padding: 8px 4px;
+      font-size: 9.5px;
+      letter-spacing: 0.8px;
+      min-width: 0;
     }
 
     .nav-actions {
@@ -978,11 +985,16 @@
     </div>
   </div>
   <div class="module-switcher">
-    <button class="mod-btn active" id="mod-itinerary" data-mod="itinerary">📋 Itinerary Builder</button>
-    <button class="mod-btn" id="mod-invoice" data-mod="invoice">🧾 Invoice Generator</button>
+    <button class="mod-btn" id="mod-dashboard" data-mod="dashboard">📈 Dashboard</button>
+    <button class="mod-btn" id="mod-queryhub" data-mod="queryhub">📞 Query Hub</button>
+    <button class="mod-btn" id="mod-leads" data-mod="leads">📥 Leads</button>
+    <button class="mod-btn" id="mod-pipeline" data-mod="pipeline">📊 Pipeline</button>
+    <button class="mod-btn active" id="mod-itinerary" data-mod="itinerary">📋 Itinerary</button>
+    <button class="mod-btn" id="mod-invoice" data-mod="invoice">🧾 Invoice</button>
   </div>
   <div class="nav-actions">
     <button class="nav-btn gold" id="btn-save">💾 Save</button>
+    <button class="nav-btn" id="btn-save-template" title="Save current as reusable template">⭐ Template</button>
     <button class="nav-btn" id="btn-export-pdf">📄 PDF</button>
     <button class="nav-btn" id="btn-export-word">📝 Word</button>
     <button class="nav-btn primary" id="btn-export">↓ HTML</button>
@@ -2133,12 +2145,29 @@ function escapeAttr(str) { return escapeHtml(str); }
    TOP NAV ACTIONS
 ================================================================ */
 document.getElementById('btn-new').addEventListener('click', () => {
-  if (confirm('Start a new blank ' + (currentModule === 'invoice' ? 'invoice' : 'itinerary') + '? Unsaved changes will be lost.')) {
+  const moduleName = currentModule === 'invoice' ? 'invoice' : currentModule === 'leads' ? 'lead' : currentModule === 'queryhub' ? 'query' : 'itinerary';
+  if (confirm('Start a new blank ' + moduleName + '? Unsaved changes will be lost.')) {
     if (currentModule === 'invoice') {
       invoiceState = createBlankInvoice();
       activeInvoiceId = null;
       renderInvoiceBuilder();
       renderInvoicePreview();
+    } else if (currentModule === 'leads') {
+      leadState = createBlankLead();
+      activeLeadId = null;
+      renderLeadsBuilder();
+      renderLeadPreview();
+    } else if (currentModule === 'queryhub') {
+      queryState = createBlankQuery();
+      activeQueryId = null;
+      renderQueryHub();
+      renderQueryHubPreview();
+    } else if (currentModule === 'pipeline') {
+      switchModule('leads');
+      leadState = createBlankLead();
+      activeLeadId = null;
+      renderLeadsBuilder();
+      renderLeadPreview();
     } else {
       state = createBlankItinerary();
       activeItineraryId = null;
@@ -2156,6 +2185,22 @@ document.getElementById('btn-save').addEventListener('click', async () => {
       await refreshInvoiceList();
       showFeedback('✓ Invoice saved: ' + invoiceState.invoiceNo);
     }
+  } else if (currentModule === 'leads') {
+    const ok = await saveLead(leadState);
+    if (ok) {
+      activeLeadId = LEAD_STORAGE_PREFIX + leadState.id;
+      await refreshLeadsList();
+      showFeedback('✓ Lead saved');
+    }
+  } else if (currentModule === 'queryhub') {
+    const ok = await saveQuery(queryState);
+    if (ok) {
+      activeQueryId = QUERY_STORAGE_PREFIX + queryState.id;
+      await refreshQueriesList();
+      showFeedback('✓ Query saved');
+    }
+  } else if (currentModule === 'pipeline') {
+    showFeedback('Switch to a builder module to save');
   } else {
     if (!state.title || state.title === 'Untitled Kashmir Itinerary') {
       const name = prompt('Enter a name for this itinerary:', state.title);
@@ -2172,16 +2217,25 @@ document.getElementById('btn-save').addEventListener('click', async () => {
   }
 });
 
+document.getElementById('btn-save-template').addEventListener('click', saveAsTemplate);
+
 document.getElementById('btn-clear').addEventListener('click', () => {
-  if (confirm('Reset current ' + (currentModule === 'invoice' ? 'invoice' : 'itinerary') + '? Unsaved changes will be lost.')) {
+  const moduleName = currentModule === 'invoice' ? 'invoice' : currentModule === 'leads' ? 'lead' : currentModule === 'queryhub' ? 'query' : 'itinerary';
+  if (confirm('Reset current ' + moduleName + '? Unsaved changes will be lost.')) {
     if (currentModule === 'invoice') {
       invoiceState = createBlankInvoice();
-      activeInvoiceId = null;
       renderInvoiceBuilder();
       renderInvoicePreview();
+    } else if (currentModule === 'leads') {
+      leadState = createBlankLead();
+      renderLeadsBuilder();
+      renderLeadPreview();
+    } else if (currentModule === 'queryhub') {
+      queryState = createBlankQuery();
+      renderQueryHub();
+      renderQueryHubPreview();
     } else {
       state = createBlankItinerary();
-      activeItineraryId = null;
       renderBuilder();
       renderPreview();
     }
@@ -2189,20 +2243,41 @@ document.getElementById('btn-clear').addEventListener('click', () => {
 });
 
 document.getElementById('btn-export').addEventListener('click', () => {
-  currentModule === 'invoice' ? exportInvoiceAsHTML() : exportAsHTML();
+  if (currentModule === 'invoice') exportInvoiceAsHTML();
+  else if (currentModule === 'itinerary') exportAsHTML();
+  else showFeedback('Export not available for this view');
 });
 document.getElementById('btn-export-pdf').addEventListener('click', () => {
-  currentModule === 'invoice' ? exportInvoiceAsPDF() : exportAsPDF();
+  if (currentModule === 'invoice') exportInvoiceAsPDF();
+  else if (currentModule === 'itinerary') exportAsPDF();
+  else showFeedback('PDF not available for this view');
 });
 document.getElementById('btn-export-word').addEventListener('click', () => {
-  currentModule === 'invoice' ? exportInvoiceAsWord() : exportAsWord();
+  if (currentModule === 'invoice') exportInvoiceAsWord();
+  else if (currentModule === 'itinerary') exportAsWord();
+  else showFeedback('Word export not available for this view');
 });
 
 document.getElementById('btn-copy-rich').addEventListener('click', () => {
-  currentModule === 'invoice' ? copyInvoiceRichHTML() : copyRichHTML();
+  if (currentModule === 'invoice') copyInvoiceRichHTML();
+  else if (currentModule === 'leads') {
+    // Just copy from the preview
+    const el = document.getElementById('preview-content');
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    document.execCommand('copy');
+    sel.removeAllRanges();
+    showFeedback('✓ Lead summary copied');
+  } else if (currentModule === 'itinerary') copyRichHTML();
+  else showFeedback('Copy not available for this view');
 });
 document.getElementById('btn-copy-plain').addEventListener('click', () => {
-  currentModule === 'invoice' ? copyInvoicePlainText() : copyPlainText();
+  if (currentModule === 'invoice') copyInvoicePlainText();
+  else if (currentModule === 'itinerary') copyPlainText();
+  else showFeedback('Copy not available for this view');
 });
 
 async function copyInvoiceRichHTML() {
@@ -2247,8 +2322,2199 @@ document.querySelectorAll('.preview-tab').forEach(tab => {
 });
 
 /* ================================================================
-   ▓▓▓▓▓▓▓▓▓▓ INVOICE GENERATOR MODULE ▓▓▓▓▓▓▓▓▓▓
+   ▓▓▓▓▓▓▓▓▓▓ B2B QUERY HUB MODULE ▓▓▓▓▓▓▓▓▓▓
+   Hotel Rate Book + Quick Replies + Currency + Query Workflow
 ================================================================ */
+
+const HOTEL_STORAGE_PREFIX = 'azees_hotel:';
+const REPLY_STORAGE_PREFIX = 'azees_reply:';
+const QUERY_STORAGE_PREFIX = 'azees_query:';
+
+let queryState = createBlankQuery();
+let activeQueryId = null;
+
+const DEFAULT_REPLY_TEMPLATES = [
+  {
+    id: 'tpl-avail',
+    name: '✓ Available',
+    body: `Dear {{agent}},\n\nThank you for your inquiry.\n\nWe confirm AVAILABILITY for the requested dates. Please find our best net rates below for {{destination}} ({{pax}} pax, {{nights}}N):\n\n{{rates}}\n\nAll rates net & non-commissionable. Please confirm at the earliest as rates are subject to availability.\n\nBest regards,\nZuhaib Kundoo\nAzees Travels`
+  },
+  {
+    id: 'tpl-on-request',
+    name: '⏳ On Request',
+    body: `Dear {{agent}},\n\nThank you for your inquiry for {{destination}} ({{pax}} pax, {{nights}}N).\n\nWe have noted your requirements and will revert with confirmed rates and availability within {{hours}} hours.\n\nFor any urgency, please reach me on +91 84910 64038.\n\nBest regards,\nZuhaib Kundoo\nAzees Travels`
+  },
+  {
+    id: 'tpl-sold-out',
+    name: '✕ Sold Out',
+    body: `Dear {{agent}},\n\nThank you for the inquiry.\n\nUnfortunately the requested hotels for {{destination}} ({{travelDates}}) are SOLD OUT during these dates. However, we can offer alternative properties of similar category.\n\nPlease let me know if you'd like to receive alternative options.\n\nBest regards,\nZuhaib Kundoo\nAzees Travels`
+  },
+  {
+    id: 'tpl-hold',
+    name: '🔒 Hold Confirmed',
+    body: `Dear {{agent}},\n\nWe are pleased to CONFIRM the HOLD for your booking:\n\n• Destination: {{destination}}\n• Travel: {{travelDates}}\n• Pax: {{pax}}\n• Hotels: {{hotels}}\n\nHold valid until: {{holdDate}}\nNet Amount: {{amount}}\n\nKindly confirm with advance payment to convert this hold into a confirmed booking.\n\nBest regards,\nZuhaib Kundoo\nAzees Travels`
+  },
+  {
+    id: 'tpl-revised',
+    name: '🔄 Rate Revised',
+    body: `Dear {{agent}},\n\nFurther to our earlier quote for {{destination}}, please find our REVISED net rates below:\n\n{{rates}}\n\nThese updated rates supersede our previous quote. Kindly confirm for booking.\n\nBest regards,\nZuhaib Kundoo\nAzees Travels`
+  },
+  {
+    id: 'tpl-followup',
+    name: '📌 Follow Up',
+    body: `Dear {{agent}},\n\nHope you are doing well.\n\nFollowing up on our quote dated {{quoteDate}} for {{destination}} ({{pax}} pax, {{nights}}N). Kindly let us know the status — confirmation or any modifications required.\n\nWe can hold the rates for another 48 hours subject to availability.\n\nBest regards,\nZuhaib Kundoo\nAzees Travels`
+  }
+];
+
+const HOTEL_CITIES = ['Srinagar', 'Gulmarg', 'Pahalgam', 'Sonamarg', 'Leh', 'Nubra', 'Pangong', 'Jammu', 'Katra'];
+const HOTEL_CATEGORIES = ['3★ Standard', '4★ Deluxe', '5★ Premium', 'Houseboat', 'Heritage', 'Resort'];
+const MEAL_PLANS = ['EP (Room only)', 'CP (Bed + Breakfast)', 'MAP (Brkfst + Dinner)', 'AP (All meals)'];
+
+function createBlankQuery() {
+  return {
+    id: 'qry_' + Date.now(),
+    createdAt: new Date().toISOString(),
+    respondedAt: '',
+    status: 'received', // received / quote_sent / negotiating / confirmed / lost
+    statusHistory: [], // [{status, at, note}]
+    linkedQuoteId: '',         // The itinerary id this quote was built from
+    linkedInvoiceId: '',
+    versions: [], // [{at, totalPrice, note}] — created on each "Revise"
+    expectedValue: '',
+    lostReason: '',
+    agentName: '',
+    agentCompany: '',
+    agentEmail: '',
+    agentPhone: '',
+    destination: '',
+    travelStart: '',
+    travelEnd: '',
+    nights: '',
+    paxAdults: '',
+    paxChildren: '',
+    rooms: '',
+    rawInquiry: '',
+    selectedHotels: [],
+    transportCost: '',
+    sightseeingCost: '',
+    miscCost: '',
+    markupPercent: '',
+    targetCurrency: 'INR',
+    fxRate: '1',
+    response: '',
+    notes: ''
+  };
+}
+
+/* ============ HOTEL RATE BOOK STORAGE ============ */
+async function saveHotel(hotel) {
+  const key = HOTEL_STORAGE_PREFIX + hotel.id;
+  try { await _storage.set(key, JSON.stringify(hotel)); return true; }
+  catch (e) { alert('Save failed: ' + e.message); return false; }
+}
+async function loadAllHotels() {
+  try {
+    const r = await _storage.list(HOTEL_STORAGE_PREFIX);
+    const keys = r?.keys || [];
+    const items = [];
+    for (const k of keys) {
+      const raw = await _storage.get(k);
+      if (raw) items.push(JSON.parse(raw.value));
+    }
+    return items;
+  } catch (e) { return []; }
+}
+async function deleteHotel(id) {
+  try { await _storage.delete(HOTEL_STORAGE_PREFIX + id); return true; } catch (e) { return false; }
+}
+
+/* ============ REPLY TEMPLATES STORAGE ============ */
+async function loadAllReplyTemplates() {
+  try {
+    const r = await _storage.list(REPLY_STORAGE_PREFIX);
+    const keys = r?.keys || [];
+    const userTpls = [];
+    for (const k of keys) {
+      const raw = await _storage.get(k);
+      if (raw) userTpls.push(JSON.parse(raw.value));
+    }
+    // Combine defaults + user templates
+    return [...DEFAULT_REPLY_TEMPLATES, ...userTpls];
+  } catch (e) { return [...DEFAULT_REPLY_TEMPLATES]; }
+}
+async function saveReplyTemplate(tpl) {
+  try { await _storage.set(REPLY_STORAGE_PREFIX + tpl.id, JSON.stringify(tpl)); return true; }
+  catch (e) { return false; }
+}
+async function deleteReplyTemplate(id) {
+  try { await _storage.delete(REPLY_STORAGE_PREFIX + id); return true; } catch (e) { return false; }
+}
+
+/* ============ QUERY STORAGE ============ */
+async function saveQuery(q) {
+  try { await _storage.set(QUERY_STORAGE_PREFIX + q.id, JSON.stringify(q)); return true; }
+  catch (e) { alert('Save failed: ' + e.message); return false; }
+}
+async function loadQuery(key) {
+  try { const r = await _storage.get(key); return r ? JSON.parse(r.value) : null; } catch (e) { return null; }
+}
+async function loadAllQueries() {
+  try {
+    const r = await _storage.list(QUERY_STORAGE_PREFIX);
+    const keys = r?.keys || [];
+    const items = [];
+    for (const k of keys) {
+      const raw = await _storage.get(k);
+      if (raw) items.push(JSON.parse(raw.value));
+    }
+    return items;
+  } catch (e) { return []; }
+}
+async function deleteQuery(id) {
+  try { await _storage.delete(QUERY_STORAGE_PREFIX + id); return true; } catch (e) { return false; }
+}
+
+/* ============ HELPER: Format time elapsed ============ */
+function formatElapsed(isoString) {
+  if (!isoString) return '—';
+  const elapsed = Date.now() - new Date(isoString).getTime();
+  const mins = Math.floor(elapsed / 60000);
+  const hours = Math.floor(mins / 60);
+  const days = Math.floor(hours / 24);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + ' min ago';
+  if (hours < 24) return hours + ' hr ago';
+  if (days < 7) return days + ' day' + (days > 1 ? 's' : '') + ' ago';
+  return Math.floor(days / 7) + 'w ago';
+}
+
+function getResponseUrgency(query) {
+  if (query.status === 'responded' || query.status === 'closed') return { color: '#27ae60', label: '✓ Done' };
+  const elapsed = Date.now() - new Date(query.createdAt).getTime();
+  const hours = elapsed / (1000 * 60 * 60);
+  if (hours < 2) return { color: '#27ae60', label: '🟢 Fresh' };
+  if (hours < 6) return { color: '#f39c12', label: '🟡 Today' };
+  if (hours < 24) return { color: '#e67e22', label: '🟠 Urgent' };
+  return { color: '#c0392b', label: '🔴 Overdue' };
+}
+
+const QUERY_PIPELINE = [
+  { key: 'received',    label: 'Received',     color: '#7c236a', icon: '📥', next: 'quote_sent' },
+  { key: 'quote_sent',  label: 'Quote Sent',   color: '#9b3a85', icon: '📤', next: 'negotiating' },
+  { key: 'negotiating', label: 'Negotiating',  color: '#ba9c62', icon: '💬', next: 'confirmed' },
+  { key: 'confirmed',   label: 'Confirmed',    color: '#27ae60', icon: '✓',  next: 'completed' },
+  { key: 'completed',   label: 'Completed',    color: '#2c3e50', icon: '🎯', next: null },
+  { key: 'lost',        label: 'Lost',         color: '#c0392b', icon: '✕',  next: null }
+];
+
+function getQueryStage(key) {
+  return QUERY_PIPELINE.find(s => s.key === key) || QUERY_PIPELINE[0];
+}
+
+function advanceQueryStatus(query, newStatus, note) {
+  if (!query.statusHistory) query.statusHistory = [];
+  query.statusHistory.push({
+    status: newStatus,
+    at: new Date().toISOString(),
+    note: note || ''
+  });
+  query.status = newStatus;
+  if (newStatus === 'quote_sent' && !query.respondedAt) {
+    query.respondedAt = new Date().toISOString();
+  }
+}
+
+/* ============ QUERY HUB BUILDER UI ============ */
+async function renderQueryHub() {
+  const el = document.getElementById('builder');
+  const q = queryState;
+  const hotels = await loadAllHotels();
+  const replyTpls = await loadAllReplyTemplates();
+  const urgency = getResponseUrgency(q);
+
+  el.innerHTML = `
+    <div class="builder-header">
+      <h1>${escapeHtml(q.agentName || q.agentCompany || 'New B2B Query')}</h1>
+      <p>${urgency.label} · Received ${formatElapsed(q.createdAt)} ${q.destination ? '· ' + escapeHtml(q.destination) : ''}</p>
+    </div>
+
+    <!-- ===== PASTE INQUIRY ===== -->
+    <div class="section">
+      <div class="section-head"><h2>① Paste B2B Inquiry</h2>
+        <span class="badge" style="background: ${urgency.color};">${urgency.label}</span>
+      </div>
+      <div class="section-body">
+        <p style="font-size: 11.5px; color: var(--brand-magenta); margin-bottom: 8px; font-weight: 600;">
+          💡 Paste agent's email/WhatsApp message — auto-extracts destination, pax, dates, nights.
+        </p>
+        <div class="field"><label>Raw Inquiry</label>
+          <textarea id="qry-rawInquiry" rows="5" placeholder="Paste the agent's full inquiry here...">${escapeHtml(q.rawInquiry)}</textarea>
+        </div>
+        <button id="qry-parse" class="add-day" style="background: var(--brand-magenta); color: white; margin-top: 8px;">⚡ Auto-Parse Inquiry</button>
+      </div>
+    </div>
+
+    <!-- ===== AGENT INFO ===== -->
+    <div class="section">
+      <div class="section-head"><h2>② Agent / Partner Info</h2></div>
+      <div class="section-body">
+        <div class="row">
+          <div class="field"><label>Contact Person</label><input id="qry-agentName" value="${escapeAttr(q.agentName)}" placeholder="e.g. Mr. Rajesh Sharma"/></div>
+          <div class="field"><label>Agency / Company</label><input id="qry-agentCompany" value="${escapeAttr(q.agentCompany)}" placeholder="e.g. Sharma Travels"/></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Email</label><input id="qry-agentEmail" value="${escapeAttr(q.agentEmail)}" placeholder="agent@email.com"/></div>
+          <div class="field"><label>Phone</label><input id="qry-agentPhone" value="${escapeAttr(q.agentPhone)}" placeholder="+91..."/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TRAVEL REQUIREMENTS ===== -->
+    <div class="section">
+      <div class="section-head"><h2>③ Query Details</h2></div>
+      <div class="section-body">
+        <div class="row row-3">
+          <div class="field"><label>Destination</label><input id="qry-destination" value="${escapeAttr(q.destination)}" placeholder="Kashmir / Ladakh..."/></div>
+          <div class="field"><label>Travel Start</label><input id="qry-travelStart" type="date" value="${escapeAttr(q.travelStart)}"/></div>
+          <div class="field"><label>Travel End</label><input id="qry-travelEnd" type="date" value="${escapeAttr(q.travelEnd)}"/></div>
+        </div>
+        <div class="row row-3">
+          <div class="field"><label>Nights</label><input id="qry-nights" type="number" value="${escapeAttr(q.nights)}"/></div>
+          <div class="field"><label>Adults</label><input id="qry-paxAdults" type="number" value="${escapeAttr(q.paxAdults)}"/></div>
+          <div class="field"><label>Children</label><input id="qry-paxChildren" type="number" value="${escapeAttr(q.paxChildren)}"/></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Rooms Required</label><input id="qry-rooms" value="${escapeAttr(q.rooms)}" placeholder="e.g. 2 DBL + 1 TPL"/></div>
+          <div class="field"><label>Target Currency for Quote</label>
+            <select id="qry-targetCurrency">
+              ${Object.entries(CURRENCIES).map(([code, c]) => `<option value="${code}" ${q.targetCurrency === code ? 'selected' : ''}>${c.symbol} ${c.code}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== HOTEL RATE BOOK PICKER ===== -->
+    <div class="section">
+      <div class="section-head"><h2>④ Hotel Selection</h2>
+        <span class="badge">${q.selectedHotels.length} ${q.selectedHotels.length === 1 ? 'HOTEL' : 'HOTELS'}</span>
+      </div>
+      <div class="section-body">
+        ${hotels.length === 0 ? `
+          <div style="text-align: center; padding: 24px; background: var(--bg); border: 1px dashed var(--line);">
+            <div style="font-size: 12px; color: var(--ink-muted); margin-bottom: 10px;">No hotels in your rate book yet</div>
+            <button id="qry-show-hotel-form" class="add-day" style="background: var(--brand-magenta); color: white; max-width: 280px; margin: 0 auto;">+ Add First Hotel to Rate Book</button>
+          </div>
+        ` : `
+          <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+            <select id="qry-hotel-picker" style="flex: 1; min-width: 200px; padding: 8px; border: 1px solid var(--line); font-size: 12px;">
+              <option value="">-- Pick from Rate Book --</option>
+              ${hotels.map(h => `<option value="${h.id}">${escapeHtml(h.city)} · ${escapeHtml(h.name)} (${escapeHtml(h.category)})</option>`).join('')}
+            </select>
+            <button id="qry-add-picked-hotel" class="add-day" style="background: var(--brand-magenta); color: white; padding: 8px 16px; flex: 0;">+ Add Selected</button>
+            <button id="qry-show-hotel-form" class="add-day" style="background: var(--brand-gold); color: var(--ink); padding: 8px 16px; flex: 0;">+ New Hotel</button>
+          </div>
+          ${q.selectedHotels.length > 0 ? `
+            <table class="price-table">
+              <thead>
+                <tr>
+                  <th style="text-align:left;">Hotel</th>
+                  <th style="width:60px;">Nights</th>
+                  <th style="width:130px;">Meal Plan</th>
+                  <th style="width:100px;">Rate/Night</th>
+                  <th style="width:36px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${q.selectedHotels.map((sh, i) => {
+                  const hotel = hotels.find(h => h.id === sh.hotelId);
+                  return `<tr>
+                    <td style="text-align:left; padding-left: 8px; font-size: 11.5px;">
+                      <strong>${escapeHtml(hotel ? hotel.name : 'Unknown')}</strong>
+                      <span style="font-size: 10px; color: var(--ink-muted); margin-left: 4px;">${hotel ? hotel.city + ' · ' + hotel.category : ''}</span>
+                    </td>
+                    <td><input data-sh="${i}" data-key="nights" type="number" min="1" value="${escapeAttr(sh.nights)}"/></td>
+                    <td><select data-sh="${i}" data-key="mealPlan">
+                      ${MEAL_PLANS.map(mp => `<option value="${mp}" ${sh.mealPlan === mp ? 'selected' : ''}>${mp}</option>`).join('')}
+                    </select></td>
+                    <td><input data-sh="${i}" data-key="rate" type="number" min="0" step="0.01" value="${escapeAttr(sh.rate)}" placeholder="0"/></td>
+                    <td style="text-align: center;"><button data-sh-del="${i}" class="icon-btn danger" style="padding: 4px 7px; color: var(--ink); border-color: var(--line);">✕</button></td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          ` : '<p style="font-size: 11px; color: var(--ink-muted); font-style: italic; padding: 6px 0;">Pick a hotel from the dropdown above to add it to this quote.</p>'}
+        `}
+        <div id="qry-hotel-form-container" style="display: none; margin-top: 14px; padding: 14px; background: var(--brand-gold-light); border-left: 3px solid var(--brand-gold);">
+          ${renderHotelForm()}
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== COST BUILDER ===== -->
+    <div class="section">
+      <div class="section-head"><h2>⑤ Additional Costs + Markup</h2></div>
+      <div class="section-body">
+        <div class="row row-3">
+          <div class="field"><label>Transport Cost (INR)</label><input id="qry-transportCost" type="number" min="0" value="${escapeAttr(q.transportCost)}" placeholder="0"/></div>
+          <div class="field"><label>Sightseeing Cost (INR)</label><input id="qry-sightseeingCost" type="number" min="0" value="${escapeAttr(q.sightseeingCost)}" placeholder="0"/></div>
+          <div class="field"><label>Miscellaneous (INR)</label><input id="qry-miscCost" type="number" min="0" value="${escapeAttr(q.miscCost)}" placeholder="0"/></div>
+        </div>
+        <div class="row row-3">
+          <div class="field"><label>Markup %</label><input id="qry-markupPercent" type="number" min="0" step="0.5" value="${escapeAttr(q.markupPercent)}" placeholder="15"/></div>
+          <div class="field"><label>FX Rate (1 INR = ?)</label><input id="qry-fxRate" type="number" min="0" step="0.0001" value="${escapeAttr(q.fxRate)}" placeholder="1"/></div>
+          <div class="field"><label>&nbsp;</label><button id="qry-fetch-fx" class="add-day" style="background: var(--brand-gold); color: var(--ink); padding: 9px;">🔄 Use 1.0 (INR)</button></div>
+        </div>
+        ${renderCostBreakdown(q, hotels)}
+      </div>
+    </div>
+
+    <!-- ===== QUICK REPLY TEMPLATES ===== -->
+    <div class="section">
+      <div class="section-head"><h2>⑥ Quick Reply</h2>
+        <span class="badge" style="background: var(--brand-magenta);">${replyTpls.length} TPLS</span>
+      </div>
+      <div class="section-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; margin-bottom: 12px;">
+          ${replyTpls.map(tpl => `
+            <button data-reply-tpl="${tpl.id}" class="template-btn" style="text-align: center;">${escapeHtml(tpl.name)}</button>
+          `).join('')}
+        </div>
+        <div class="field"><label>Response Message (editable)</label>
+          <textarea id="qry-response" rows="10" placeholder="Pick a template above or write your response...">${escapeHtml(q.response)}</textarea>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+          <button id="qry-copy-response" class="add-day" style="background: var(--brand-magenta); color: white; flex: 1; min-width: 140px;">⎘ Copy Response</button>
+          <button id="qry-mark-responded" class="add-day" style="background: var(--brand-gold); color: var(--ink); flex: 1; min-width: 140px;">✓ Mark Responded</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== STATUS PIPELINE + WORKFLOW ===== -->
+    <div class="section">
+      <div class="section-head"><h2>⑦ Status & Workflow</h2>
+        <span class="badge" style="background: ${getQueryStage(q.status).color};">${getQueryStage(q.status).icon} ${getQueryStage(q.status).label}</span>
+      </div>
+      <div class="section-body">
+        <!-- Status pipeline -->
+        <div style="font-size: 9px; letter-spacing: 2px; color: var(--brand-magenta); font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Change Stage</div>
+        <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 14px;">
+          ${QUERY_PIPELINE.map(s => `
+            <button data-set-status="${s.key}" style="flex: 1; min-width: 96px; padding: 8px 6px; font-size: 10px; letter-spacing: 1px; cursor: pointer; text-transform: uppercase; font-weight: 700; border: 2px solid ${s.color}; background: ${q.status === s.key ? s.color : 'transparent'}; color: ${q.status === s.key ? 'white' : s.color}; font-family: inherit;">
+              ${s.icon} ${s.label}
+            </button>
+          `).join('')}
+        </div>
+
+        ${q.status === 'lost' ? `
+          <div class="field" style="margin-bottom: 12px;">
+            <label>Reason for Loss (helps analytics)</label>
+            <input id="qry-lostReason" value="${escapeAttr(q.lostReason || '')}" placeholder="e.g. Price too high · Booked elsewhere · Dates changed"/>
+          </div>
+        ` : ''}
+
+        ${q.statusHistory && q.statusHistory.length > 0 ? `
+          <div style="background: var(--bg); padding: 10px 14px; margin-bottom: 12px; border-left: 3px solid var(--brand-gold);">
+            <div style="font-size: 9px; letter-spacing: 2px; color: var(--brand-gold-dark); font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">📜 Status History</div>
+            ${q.statusHistory.slice(-5).map(h => `
+              <div style="font-size: 10.5px; color: var(--ink-soft); padding: 2px 0;">
+                <strong>${getQueryStage(h.status).icon} ${getQueryStage(h.status).label}</strong> · ${new Date(h.at).toLocaleString()}${h.note ? ' · ' + escapeHtml(h.note) : ''}
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+
+        ${q.versions && q.versions.length > 0 ? `
+          <div style="background: var(--brand-magenta-light); padding: 10px 14px; margin-bottom: 12px; border-left: 3px solid var(--brand-magenta);">
+            <div style="font-size: 9px; letter-spacing: 2px; color: var(--brand-magenta); font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">📝 Quote Versions</div>
+            ${q.versions.map((v, i) => `
+              <div style="font-size: 10.5px; color: var(--ink-soft); padding: 2px 0; display: flex; justify-content: space-between;">
+                <span><strong>v${i + 1}</strong> · ${new Date(v.at).toLocaleString()}${v.note ? ' · ' + escapeHtml(v.note) : ''}</span>
+                <span style="color: var(--brand-magenta); font-weight: 700;">₹ ${Math.round(v.totalPrice).toLocaleString('en-IN')}</span>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+
+        <!-- Action buttons grid -->
+        <div style="font-size: 9px; letter-spacing: 2px; color: var(--brand-magenta); font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Actions</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <button id="qry-revise" class="add-day" style="background: var(--brand-gold); color: var(--ink);">🔄 Revise Quote</button>
+          <button id="qry-to-itin" class="add-day" style="background: var(--brand-magenta); color: white;">📋 Build Itinerary</button>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <button id="qry-to-inv" class="add-day" style="background: var(--brand-magenta-dark); color: white;">🧾 Create Invoice</button>
+          <button id="qry-mark-responded" class="add-day" style="background: var(--brand-gold-dark); color: white;">✓ Mark Quote Sent</button>
+        </div>
+        <div style="font-size: 9px; letter-spacing: 2px; color: var(--brand-magenta); font-weight: 700; text-transform: uppercase; margin: 10px 0 6px 0;">Export for Partner</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button id="qry-word-branded" class="add-day" style="background: var(--ink); color: white;">📝 Word · Azees Branded</button>
+          <button id="qry-word-whitelabel" class="add-day" style="background: var(--ink); color: white;">📝 Word · White-label</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="height: 40px;"></div>
+  `;
+
+  attachQueryHubListeners(hotels, replyTpls);
+}
+
+function renderHotelForm(existing) {
+  const h = existing || { name: '', city: 'Srinagar', category: '4★ Deluxe', baseRate: '', notes: '' };
+  return `
+    <div style="font-size: 10px; letter-spacing: 2px; color: var(--brand-gold-dark); font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">
+      ➕ Add Hotel to Rate Book
+    </div>
+    <div class="row">
+      <div class="field"><label>Hotel Name</label><input id="hotel-name" value="${escapeAttr(h.name)}" placeholder="e.g. Hotel Hilltop"/></div>
+      <div class="field"><label>City</label>
+        <select id="hotel-city">
+          ${HOTEL_CITIES.map(c => `<option value="${c}" ${h.city === c ? 'selected' : ''}>${c}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Category</label>
+        <select id="hotel-category">
+          ${HOTEL_CATEGORIES.map(c => `<option value="${c}" ${h.category === c ? 'selected' : ''}>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Base Rate / Night (INR, DBL)</label><input id="hotel-baseRate" type="number" min="0" value="${escapeAttr(h.baseRate)}" placeholder="e.g. 3500"/></div>
+    </div>
+    <div class="row row-1">
+      <div class="field"><label>Notes (optional)</label><input id="hotel-notes" value="${escapeAttr(h.notes)}" placeholder="e.g. CP rate · No surcharge · Contact: Mr. Wani 98765..."/></div>
+    </div>
+    <div style="display: flex; gap: 8px; margin-top: 10px;">
+      <button id="hotel-save-btn" class="add-day" style="background: var(--brand-magenta); color: white; flex: 1;">💾 Save to Rate Book</button>
+      <button id="hotel-cancel-btn" class="add-day" style="background: #999; color: white; max-width: 100px;">Cancel</button>
+    </div>
+  `;
+}
+
+function renderCostBreakdown(q, hotels) {
+  // Calculate hotel costs
+  let hotelTotal = 0;
+  q.selectedHotels.forEach(sh => {
+    const rate = Number(sh.rate) || 0;
+    const nights = Number(sh.nights) || 0;
+    hotelTotal += rate * nights;
+  });
+  // Multiply by rooms (approximation: number of double rooms or default 1)
+  const rooms = Number(q.rooms) || 1;
+  // We assume rate is per-room, so multiply by rooms count
+  // Actually let's keep it simple: rate × nights = cost for those rooms
+  const transport = Number(q.transportCost) || 0;
+  const sightseeing = Number(q.sightseeingCost) || 0;
+  const misc = Number(q.miscCost) || 0;
+  const subtotalINR = hotelTotal + transport + sightseeing + misc;
+  const markupPct = Number(q.markupPercent) || 0;
+  const markupAmount = (subtotalINR * markupPct) / 100;
+  const totalINR = subtotalINR + markupAmount;
+  const fxRate = Number(q.fxRate) || 1;
+  const totalConverted = totalINR * fxRate;
+  const cur = CURRENCIES[q.targetCurrency] || CURRENCIES.INR;
+  const fmtINR = (v) => '₹ ' + Math.round(v).toLocaleString('en-IN');
+  const fmtTarget = (v) => cur.symbol + ' ' + Number(v).toLocaleString(cur.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  return `
+    <div style="background: var(--brand-magenta-light); padding: 12px 14px; margin-top: 12px; border-left: 3px solid var(--brand-magenta);">
+      <div style="font-size: 10px; letter-spacing: 2px; color: var(--brand-magenta); font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">💰 Cost Breakdown (Internal Working)</div>
+      <table style="width: 100%; font-size: 11.5px;">
+        <tr><td style="padding: 3px 0; color: var(--ink-soft);">Hotels (${q.selectedHotels.length}):</td><td style="text-align: right; font-weight: 600;">${fmtINR(hotelTotal)}</td></tr>
+        ${transport > 0 ? `<tr><td style="padding: 3px 0; color: var(--ink-soft);">Transport:</td><td style="text-align: right;">${fmtINR(transport)}</td></tr>` : ''}
+        ${sightseeing > 0 ? `<tr><td style="padding: 3px 0; color: var(--ink-soft);">Sightseeing:</td><td style="text-align: right;">${fmtINR(sightseeing)}</td></tr>` : ''}
+        ${misc > 0 ? `<tr><td style="padding: 3px 0; color: var(--ink-soft);">Miscellaneous:</td><td style="text-align: right;">${fmtINR(misc)}</td></tr>` : ''}
+        <tr><td style="padding: 4px 0; color: var(--ink-soft); border-top: 1px solid var(--line); padding-top: 6px;"><strong>Subtotal (Net Cost):</strong></td><td style="text-align: right; font-weight: 700; border-top: 1px solid var(--line); padding-top: 6px;">${fmtINR(subtotalINR)}</td></tr>
+        ${markupPct > 0 ? `<tr><td style="padding: 3px 0; color: var(--ink-soft);">+ Markup (${markupPct}%):</td><td style="text-align: right; color: var(--brand-magenta);">${fmtINR(markupAmount)}</td></tr>` : ''}
+        <tr><td style="padding: 6px 0; background: var(--brand-magenta); color: white; padding-left: 10px; font-weight: 700; letter-spacing: 1px;">SELLING PRICE (INR):</td><td style="text-align: right; padding: 6px 10px; background: var(--brand-magenta); color: white; font-weight: 700; font-size: 14px;">${fmtINR(totalINR)}</td></tr>
+        ${q.targetCurrency !== 'INR' && fxRate !== 1 ? `<tr><td style="padding: 6px 0; background: var(--brand-gold); color: var(--ink); padding-left: 10px; font-weight: 700; letter-spacing: 1px;">SELLING PRICE (${cur.code}):</td><td style="text-align: right; padding: 6px 10px; background: var(--brand-gold); color: var(--ink); font-weight: 700; font-size: 14px;">${fmtTarget(totalConverted)}</td></tr>` : ''}
+      </table>
+    </div>
+  `;
+}
+
+function attachQueryHubListeners(hotels, replyTpls) {
+  // Top-level fields
+  const fields = ['rawInquiry', 'agentName', 'agentCompany', 'agentEmail', 'agentPhone',
+    'destination', 'travelStart', 'travelEnd', 'nights', 'paxAdults', 'paxChildren', 'rooms',
+    'targetCurrency', 'transportCost', 'sightseeingCost', 'miscCost', 'markupPercent', 'fxRate',
+    'response', 'notes'];
+
+  fields.forEach(key => {
+    const el = document.getElementById('qry-' + key);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      queryState[key] = el.value;
+      // Only re-render builder for fields that affect calc breakdown
+      if (['transportCost', 'sightseeingCost', 'miscCost', 'markupPercent', 'fxRate', 'targetCurrency', 'rooms'].includes(key)) {
+        renderQueryHub();
+      }
+    });
+    if (el.tagName === 'SELECT') {
+      el.addEventListener('change', () => {
+        queryState[key] = el.value;
+        renderQueryHub();
+      });
+    }
+  });
+
+  // Parse inquiry
+  const parseBtn = document.getElementById('qry-parse');
+  if (parseBtn) parseBtn.addEventListener('click', () => {
+    if (!queryState.rawInquiry || !queryState.rawInquiry.trim()) {
+      alert('Paste an inquiry first.');
+      return;
+    }
+    const extracted = parseInquiry(queryState.rawInquiry);
+    if (!extracted) return;
+    let count = 0;
+    // Map parser fields to query fields
+    const map = {
+      agentEmail: 'agentEmail', agentPhone: 'agentPhone', agentName: 'agentName',
+      agentCompany: 'agentCompany', destination: 'destination', nights: 'nights',
+      paxAdults: 'paxAdults', paxChildren: 'paxChildren', travelStart: 'travelStart'
+    };
+    Object.entries(map).forEach(([src, dest]) => {
+      if (extracted[src] && !queryState[dest]) {
+        queryState[dest] = extracted[src];
+        count++;
+      }
+    });
+    renderQueryHub();
+    showFeedback('✓ Parsed ' + count + ' field' + (count === 1 ? '' : 's'));
+  });
+
+  // Hotel picker
+  const addPickedBtn = document.getElementById('qry-add-picked-hotel');
+  if (addPickedBtn) addPickedBtn.addEventListener('click', () => {
+    const picker = document.getElementById('qry-hotel-picker');
+    if (!picker.value) { alert('Pick a hotel from the dropdown first.'); return; }
+    const hotel = hotels.find(h => h.id === picker.value);
+    if (!hotel) return;
+    queryState.selectedHotels.push({
+      hotelId: hotel.id,
+      nights: queryState.nights || 1,
+      mealPlan: 'CP (Bed + Breakfast)',
+      rate: hotel.baseRate || ''
+    });
+    renderQueryHub();
+    showFeedback('✓ Added: ' + hotel.name);
+  });
+
+  // Selected hotel row inputs
+  document.querySelectorAll('[data-sh]').forEach(el => {
+    el.addEventListener('input', () => {
+      const idx = parseInt(el.dataset.sh);
+      const key = el.dataset.key;
+      queryState.selectedHotels[idx][key] = el.value;
+      renderQueryHub();
+    });
+    if (el.tagName === 'SELECT') {
+      el.addEventListener('change', () => {
+        const idx = parseInt(el.dataset.sh);
+        const key = el.dataset.key;
+        queryState.selectedHotels[idx][key] = el.value;
+      });
+    }
+  });
+
+  // Remove selected hotel
+  document.querySelectorAll('[data-sh-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.shDel);
+      queryState.selectedHotels.splice(idx, 1);
+      renderQueryHub();
+    });
+  });
+
+  // Show hotel form
+  const showFormBtn = document.getElementById('qry-show-hotel-form');
+  if (showFormBtn) showFormBtn.addEventListener('click', () => {
+    const container = document.getElementById('qry-hotel-form-container');
+    container.style.display = container.style.display === 'none' ? 'block' : 'none';
+    attachHotelFormListeners();
+  });
+
+  // FX rate quick button (INR reset)
+  const fxBtn = document.getElementById('qry-fetch-fx');
+  if (fxBtn) fxBtn.addEventListener('click', () => {
+    queryState.fxRate = '1';
+    queryState.targetCurrency = 'INR';
+    renderQueryHub();
+  });
+
+  // Reply templates
+  document.querySelectorAll('[data-reply-tpl]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tplId = btn.dataset.replyTpl;
+      const tpl = replyTpls.find(t => t.id === tplId);
+      if (!tpl) return;
+      // Replace placeholders
+      let body = tpl.body;
+      const fx = Number(queryState.fxRate) || 1;
+      const cur = CURRENCIES[queryState.targetCurrency] || CURRENCIES.INR;
+      const totalPax = (Number(queryState.paxAdults) || 0) + (Number(queryState.paxChildren) || 0);
+      const replacements = {
+        '{{agent}}': queryState.agentName || queryState.agentCompany || 'Partner',
+        '{{destination}}': queryState.destination || '[destination]',
+        '{{pax}}': totalPax || '[pax]',
+        '{{nights}}': queryState.nights || '[nights]',
+        '{{travelDates}}': (queryState.travelStart || '[start]') + ' to ' + (queryState.travelEnd || '[end]'),
+        '{{hours}}': '4',
+        '{{holdDate}}': new Date(Date.now() + 48*60*60*1000).toISOString().split('T')[0],
+        '{{quoteDate}}': new Date(queryState.createdAt).toISOString().split('T')[0],
+        '{{rates}}': generateRateSummary(queryState, hotels),
+        '{{hotels}}': queryState.selectedHotels.map(sh => {
+          const h = hotels.find(x => x.id === sh.hotelId);
+          return h ? h.name : '';
+        }).filter(Boolean).join(', ') || '[hotels]',
+        '{{amount}}': cur.symbol + ' ' + calculateTotalPrice(queryState).toFixed(2)
+      };
+      Object.entries(replacements).forEach(([k, v]) => {
+        body = body.replace(new RegExp(k.replace(/[{}]/g, '\\$&'), 'g'), v);
+      });
+      queryState.response = body;
+      renderQueryHub();
+      showFeedback('✓ Template loaded — edit as needed');
+    });
+  });
+
+  // Copy response
+  const copyBtn = document.getElementById('qry-copy-response');
+  if (copyBtn) copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(queryState.response || '');
+      showFeedback('✓ Response copied to clipboard');
+    } catch (e) { alert('Could not copy. Select manually.'); }
+  });
+
+  // Mark responded
+  const respBtn = document.getElementById('qry-mark-responded');
+  if (respBtn) respBtn.addEventListener('click', () => {
+    advanceQueryStatus(queryState, 'quote_sent', 'Marked as quote sent');
+    saveQuery(queryState);
+    renderQueryHub();
+    refreshQueriesList();
+    showFeedback('✓ Marked as Quote Sent');
+  });
+
+  // Status pipeline buttons
+  document.querySelectorAll('[data-set-status]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const newStatus = btn.dataset.setStatus;
+      if (newStatus === queryState.status) return;
+      advanceQueryStatus(queryState, newStatus);
+      saveQuery(queryState);
+      renderQueryHub();
+      refreshQueriesList();
+      showFeedback('✓ Status: ' + getQueryStage(newStatus).label);
+    });
+  });
+
+  // Lost reason
+  const lostEl = document.getElementById('qry-lostReason');
+  if (lostEl) lostEl.addEventListener('input', () => {
+    queryState.lostReason = lostEl.value;
+  });
+
+  // Revise quote
+  const reviseBtn = document.getElementById('qry-revise');
+  if (reviseBtn) reviseBtn.addEventListener('click', () => {
+    const choice = prompt('Revise as:\n\n1 = New version (keep history)\n2 = Overwrite current\n\nEnter 1 or 2:', '1');
+    if (choice !== '1' && choice !== '2') return;
+    const totalPrice = calculateTotalPrice(queryState);
+    const note = prompt('Revision note (optional):', '') || '';
+    if (choice === '1') {
+      // Save current as a version snapshot, then continue editing
+      if (!queryState.versions) queryState.versions = [];
+      queryState.versions.push({
+        at: new Date().toISOString(),
+        totalPrice: totalPrice,
+        note: note,
+        snapshot: JSON.parse(JSON.stringify({
+          selectedHotels: queryState.selectedHotels,
+          transportCost: queryState.transportCost,
+          sightseeingCost: queryState.sightseeingCost,
+          miscCost: queryState.miscCost,
+          markupPercent: queryState.markupPercent
+        }))
+      });
+      showFeedback('✓ Snapshot v' + queryState.versions.length + ' saved. Edit and save again.');
+    } else {
+      // Overwrite — just log it
+      if (!queryState.versions) queryState.versions = [];
+      queryState.versions = [{ at: new Date().toISOString(), totalPrice: totalPrice, note: note + ' (overwrite)' }];
+      showFeedback('✓ Marked as overwritten — edit now');
+    }
+    saveQuery(queryState);
+    renderQueryHub();
+  });
+
+  // Word exports
+  const wordBrandedBtn = document.getElementById('qry-word-branded');
+  if (wordBrandedBtn) wordBrandedBtn.addEventListener('click', () => exportQueryAsWord(false, hotels));
+  const wordWhiteLabelBtn = document.getElementById('qry-word-whitelabel');
+  if (wordWhiteLabelBtn) wordWhiteLabelBtn.addEventListener('click', () => exportQueryAsWord(true, hotels));
+
+  // Convert to itinerary
+  const toItinBtn = document.getElementById('qry-to-itin');
+  if (toItinBtn) toItinBtn.addEventListener('click', () => convertQueryToItinerary(hotels));
+
+  // Convert to invoice
+  const toInvBtn = document.getElementById('qry-to-inv');
+  if (toInvBtn) toInvBtn.addEventListener('click', () => convertQueryToInvoice(hotels));
+}
+
+function attachHotelFormListeners() {
+  const saveBtn = document.getElementById('hotel-save-btn');
+  const cancelBtn = document.getElementById('hotel-cancel-btn');
+  if (saveBtn) saveBtn.addEventListener('click', async () => {
+    const hotel = {
+      id: 'hotel_' + Date.now(),
+      name: document.getElementById('hotel-name').value.trim(),
+      city: document.getElementById('hotel-city').value,
+      category: document.getElementById('hotel-category').value,
+      baseRate: document.getElementById('hotel-baseRate').value,
+      notes: document.getElementById('hotel-notes').value
+    };
+    if (!hotel.name) { alert('Enter hotel name.'); return; }
+    await saveHotel(hotel);
+    showFeedback('✓ Added: ' + hotel.name);
+    renderQueryHub();
+  });
+  if (cancelBtn) cancelBtn.addEventListener('click', () => {
+    document.getElementById('qry-hotel-form-container').style.display = 'none';
+  });
+}
+
+function generateRateSummary(q, hotels) {
+  if (q.selectedHotels.length === 0) return '[rates to be added]';
+  return q.selectedHotels.map(sh => {
+    const h = hotels.find(x => x.id === sh.hotelId);
+    if (!h) return '';
+    return `• ${h.name} (${h.city}, ${h.category}) — ${sh.nights} nights · ${sh.mealPlan}`;
+  }).filter(Boolean).join('\n');
+}
+
+function calculateTotalPrice(q) {
+  let hotelTotal = 0;
+  q.selectedHotels.forEach(sh => {
+    hotelTotal += (Number(sh.rate) || 0) * (Number(sh.nights) || 0);
+  });
+  const subtotalINR = hotelTotal + (Number(q.transportCost) || 0) + (Number(q.sightseeingCost) || 0) + (Number(q.miscCost) || 0);
+  const markupPct = Number(q.markupPercent) || 0;
+  const totalINR = subtotalINR * (1 + markupPct / 100);
+  const fxRate = Number(q.fxRate) || 1;
+  return totalINR * fxRate;
+}
+
+function convertQueryToItinerary(hotels) {
+  state = createBlankItinerary();
+  state.id = 'itin_' + Date.now();
+  state.agency = queryState.agentCompany || queryState.agentName;
+  state.contact = queryState.agentName;
+  state.destination = queryState.destination || 'Kashmir';
+  state.routeSummary = queryState.destination;
+  if (queryState.nights) state.nights = Number(queryState.nights);
+  if (queryState.nights) state.days = Number(queryState.nights) + 1;
+  state.title = (queryState.destination || 'Kashmir') + ' ' + (state.nights || '') + 'N/' + (state.days || '') + 'D — ' + (queryState.agentCompany || queryState.agentName || 'Untitled');
+  // Pre-fill hotels from query
+  if (queryState.selectedHotels.length > 0) {
+    state.hotels = queryState.selectedHotels.map(sh => {
+      const h = hotels.find(x => x.id === sh.hotelId);
+      return {
+        city: h ? h.city : '',
+        nights: sh.nights + ' Nights',
+        star3: '', star4: '', star5: h ? h.name : ''
+      };
+    });
+  }
+  // Save query as responded
+  queryState.status = 'responded';
+  queryState.respondedAt = new Date().toISOString();
+  saveQuery(queryState);
+  switchModule('itinerary');
+  showFeedback('✓ Query → Itinerary');
+}
+
+function convertQueryToInvoice(hotels) {
+  invoiceState = createBlankInvoice();
+  invoiceState.id = 'inv_' + Date.now();
+  invoiceState.clientType = 'B2B';
+  invoiceState.clientName = queryState.agentCompany || queryState.agentName;
+  invoiceState.clientEmail = queryState.agentEmail;
+  invoiceState.clientPhone = queryState.agentPhone;
+  invoiceState.destination = queryState.destination;
+  invoiceState.travelStart = queryState.travelStart;
+  invoiceState.travelEnd = queryState.travelEnd;
+  const totalPax = (Number(queryState.paxAdults) || 0) + (Number(queryState.paxChildren) || 0);
+  if (totalPax) invoiceState.paxCount = totalPax + ' Pax';
+  invoiceState.currency = queryState.targetCurrency || 'INR';
+  // Pre-fill with hotel line items + transport
+  const items = [];
+  queryState.selectedHotels.forEach(sh => {
+    const h = hotels.find(x => x.id === sh.hotelId);
+    if (!h) return;
+    const totalCost = (Number(sh.rate) || 0) * (Number(sh.nights) || 0);
+    items.push({
+      desc: h.name + ' (' + h.city + ', ' + h.category + ') — ' + sh.nights + 'N · ' + sh.mealPlan,
+      qty: sh.nights,
+      rate: sh.rate || '',
+      amount: totalCost.toFixed(2),
+      amountManual: false
+    });
+  });
+  if (queryState.transportCost) {
+    items.push({ desc: 'Private transport — vehicles, fuel, driver', qty: 1, rate: queryState.transportCost, amount: '0.00', amountManual: false });
+  }
+  if (queryState.sightseeingCost) {
+    items.push({ desc: 'Sightseeing & activities', qty: 1, rate: queryState.sightseeingCost, amount: '0.00', amountManual: false });
+  }
+  if (queryState.miscCost) {
+    items.push({ desc: 'Miscellaneous & taxes', qty: 1, rate: queryState.miscCost, amount: '0.00', amountManual: false });
+  }
+  if (items.length > 0) invoiceState.items = items;
+
+  queryState.status = 'responded';
+  queryState.respondedAt = new Date().toISOString();
+  saveQuery(queryState);
+  switchModule('invoice');
+  showFeedback('✓ Query → Invoice');
+}
+
+/* ============ QUERY HUB PREVIEW PANEL ============ */
+function renderQueryHubPreview() {
+  const el = document.getElementById('preview-content');
+  el.className = 'preview-content email-mode';
+  const q = queryState;
+  const cur = CURRENCIES[q.targetCurrency] || CURRENCIES.INR;
+  const urgency = getResponseUrgency(q);
+  const totalPrice = calculateTotalPrice(q);
+
+  let html = '<div class="email-output" style="padding: 20px;">';
+  html += `<table style="width:100%; margin-bottom: 14px;"><tr>
+    <td style="width: 56px;"><img src="${AZEES_LOGO}" alt="Azees" style="width: 48px; height: 48px;"/></td>
+    <td>
+      <div style="font-size: 16px; color: #7c236a; letter-spacing: 3px; font-weight: 300;">B2B QUERY HUB</div>
+      <div style="font-size: 8.5px; color: #ba9c62; letter-spacing: 2px; font-weight: 700; margin-top: 2px;">Live Quote · Internal Working View</div>
+    </td>
+  </tr></table>`;
+
+  html += `<div style="background: ${urgency.color}; color: white; padding: 6px 12px; margin-bottom: 12px; font-size: 10px; letter-spacing: 1.5px; font-weight: 700; text-transform: uppercase;">${urgency.label} · ${formatElapsed(q.createdAt)}</div>`;
+
+  // Agent
+  html += `<table style="width:100%; font-size: 11px; margin-bottom: 12px;">
+    <tr><td style="color: #888; padding: 2px 0; width: 100px;">Agent:</td><td style="font-weight: 600;">${escapeHtml(q.agentName || q.agentCompany || '—')}</td></tr>
+    <tr><td style="color: #888; padding: 2px 0;">Email:</td><td>${escapeHtml(q.agentEmail || '—')}</td></tr>
+    <tr><td style="color: #888; padding: 2px 0;">Destination:</td><td style="font-weight: 600;">${escapeHtml(q.destination || '—')}</td></tr>
+    <tr><td style="color: #888; padding: 2px 0;">Pax:</td><td>${q.paxAdults || '—'} Adults${q.paxChildren ? ' + ' + q.paxChildren + ' Children' : ''}</td></tr>
+    <tr><td style="color: #888; padding: 2px 0;">Dates:</td><td>${escapeHtml(q.travelStart || '—')}${q.travelEnd ? ' → ' + escapeHtml(q.travelEnd) : ''}</td></tr>
+  </table>`;
+
+  // Hotel selection summary
+  if (q.selectedHotels.length > 0) {
+    html += `<div style="font-size: 9px; letter-spacing: 1.5px; color: #7c236a; font-weight: 700; text-transform: uppercase; margin: 12px 0 6px 0; border-left: 3px solid #ba9c62; padding-left: 10px;">SELECTED HOTELS</div>`;
+    html += `<table style="width:100%; font-size: 11px; border-collapse: collapse;">`;
+    q.selectedHotels.forEach(sh => {
+      const cost = (Number(sh.rate) || 0) * (Number(sh.nights) || 0);
+      html += `<tr style="border-bottom: 1px solid #e8e3da;">
+        <td style="padding: 6px 0;"><strong>${escapeHtml(sh.hotelName || 'Hotel')}</strong><br/><span style="font-size: 9.5px; color: #888;">${escapeHtml(sh.mealPlan)} · ${sh.nights} nights</span></td>
+        <td style="text-align: right; padding: 6px 0; font-weight: 600; color: #7c236a;">₹ ${Math.round(cost).toLocaleString('en-IN')}</td>
+      </tr>`;
+    });
+    html += `</table>`;
+  }
+
+  // Total price callout
+  if (totalPrice > 0) {
+    html += `<div style="background: #7c236a; color: white; padding: 12px 14px; margin-top: 14px; text-align: center;">
+      <div style="font-size: 9px; letter-spacing: 2.5px; font-weight: 700; opacity: 0.85;">QUOTED PRICE</div>
+      <div style="font-size: 22px; font-weight: 700; margin-top: 4px;">${cur.symbol} ${totalPrice.toLocaleString(cur.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+    </div>`;
+  }
+
+  // Response draft
+  if (q.response) {
+    html += `<div style="margin-top: 14px;">
+      <div style="font-size: 9px; letter-spacing: 1.5px; color: #ba9c62; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">📧 DRAFT RESPONSE</div>
+      <div style="background: #faf8f5; padding: 12px; border-left: 3px solid #ba9c62; font-size: 11px; color: #4a4a4a; white-space: pre-wrap;">${escapeHtml(q.response)}</div>
+    </div>`;
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+/* ============ QUERIES SIDEBAR LIST ============ */
+async function refreshQueriesList() {
+  const ul = document.getElementById('saved-list');
+  if (!ul) return;
+  const queries = await loadAllQueries();
+  if (!queries.length) {
+    ul.innerHTML = '<li class="saved-empty">No B2B queries yet. Click + New to create one.</li>';
+    return;
+  }
+  queries.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  ul.innerHTML = queries.map(q => {
+    const urgency = getResponseUrgency(q);
+    return `
+      <li class="saved-item" data-query-key="${QUERY_STORAGE_PREFIX + q.id}" style="border-left-color: ${urgency.color};">
+        <div class="saved-item-title">${escapeHtml(q.agentName || q.agentCompany || 'Unnamed')}</div>
+        <div class="saved-item-meta">${urgency.label} · ${escapeHtml(q.destination || '—')} · ${formatElapsed(q.createdAt)}</div>
+        <button class="saved-item-delete" data-query-del-key="${q.id}" title="Delete">✕</button>
+      </li>
+    `;
+  }).join('');
+
+  ul.querySelectorAll('.saved-item').forEach(li => {
+    li.addEventListener('click', async (e) => {
+      if (e.target.closest('.saved-item-delete')) return;
+      const key = li.dataset.queryKey;
+      const q = await loadQuery(key);
+      if (q) {
+        queryState = q;
+        activeQueryId = key;
+        renderQueryHub();
+        renderQueryHubPreview();
+        showFeedback('✓ Loaded query');
+      }
+    });
+  });
+  ul.querySelectorAll('[data-query-del-key]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.queryDelKey;
+      if (confirm('Delete this query?')) {
+        await deleteQuery(id);
+        await refreshQueriesList();
+        showFeedback('✓ Deleted');
+      }
+    });
+  });
+}
+
+function exportQueryAsWord(whiteLabel, hotels) {
+  const q = queryState;
+  const totalPrice = calculateTotalPrice(q);
+  const cur = CURRENCIES[q.targetCurrency] || CURRENCIES.INR;
+  const totalFmt = cur.symbol + ' ' + totalPrice.toLocaleString(cur.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const totalPax = (Number(q.paxAdults) || 0) + (Number(q.paxChildren) || 0);
+
+  let hotelRows = '';
+  q.selectedHotels.forEach(sh => {
+    const h = hotels.find(x => x.id === sh.hotelId);
+    if (!h) return;
+    const cost = (Number(sh.rate) || 0) * (Number(sh.nights) || 0);
+    hotelRows += `<tr>
+      <td style="padding:8px 10px; border:1pt solid #cccccc;"><strong>${escapeHtml(h.name)}</strong><br/><span style="font-size:9pt; color:#666;">${escapeHtml(h.city)} · ${escapeHtml(h.category)}</span></td>
+      <td style="padding:8px 10px; border:1pt solid #cccccc; text-align:center;">${escapeHtml(sh.nights)}</td>
+      <td style="padding:8px 10px; border:1pt solid #cccccc;">${escapeHtml(sh.mealPlan)}</td>
+      <td style="padding:8px 10px; border:1pt solid #cccccc; text-align:right;">₹ ${Math.round(cost).toLocaleString('en-IN')}</td>
+    </tr>`;
+  });
+
+  const brandColor = whiteLabel ? '#1a1a1a' : '#7c236a';
+  const accentColor = whiteLabel ? '#666666' : '#ba9c62';
+
+  const header = whiteLabel ? `
+    <div style="padding: 20px; border-bottom: 3pt solid ${accentColor}; margin-bottom: 20px;">
+      <div style="font-size: 11pt; color: #999; letter-spacing: 3pt; text-transform: uppercase;">[YOUR AGENCY LOGO HERE]</div>
+      <div style="font-size: 22pt; color: ${brandColor}; letter-spacing: 4pt; font-weight: bold; margin-top: 8pt;">[YOUR AGENCY NAME]</div>
+      <div style="font-size: 9pt; color: ${accentColor}; letter-spacing: 2pt; margin-top: 4pt;">[YOUR TAGLINE]</div>
+    </div>
+  ` : `
+    <div style="padding: 20px; border-bottom: 3pt solid #ba9c62; margin-bottom: 20px;">
+      <table>
+        <tr>
+          <td style="width: 70px; vertical-align: middle;">
+            <img src="${AZEES_LOGO}" alt="Azees Travels" style="width: 60px; height: 60px;"/>
+          </td>
+          <td style="vertical-align: middle; padding-left: 14px;">
+            <div style="font-size: 22pt; color: #7c236a; letter-spacing: 4pt; font-weight: 300;">AZEES TRAVELS</div>
+            <div style="font-size: 9pt; color: #ba9c62; letter-spacing: 2pt; margin-top: 4pt;">Curated Journeys · Since 2022</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  `;
+
+  const footer = whiteLabel ? `
+    <div style="margin-top: 30px; padding-top: 14px; border-top: 2pt solid ${accentColor}; font-size: 9pt; color: #666; text-align: center;">
+      <strong style="color: ${brandColor};">[YOUR COMPANY NAME]</strong><br/>
+      [Your Address] · [Phone] · [Email] · [Website]
+    </div>
+  ` : `
+    <div style="margin-top: 30px; padding-top: 14px; border-top: 2pt solid #ba9c62; font-size: 9pt; color: #4a4a4a;">
+      <table style="width:100%;">
+        <tr>
+          <td style="width:50%; vertical-align:top; padding-right: 18pt; border-right: 1pt solid #e8e3da;">
+            <div style="font-size: 9pt; color: #7c236a; font-weight: bold; letter-spacing: 2pt; margin-bottom: 5pt;">🇮🇳 INDIA · HEAD OFFICE</div>
+            Rangpura, Ellahibagh<br/>Srinagar 190020, J&K<br/>
+            M: +91 84910 64038 · +91 96222 59639<br/>
+            E: azeestravelsales@gmail.com
+          </td>
+          <td style="width:50%; vertical-align:top; padding-left: 18pt;">
+            <div style="font-size: 9pt; color: #7c236a; font-weight: bold; letter-spacing: 2pt; margin-bottom: 5pt;">🇲🇺 MAURITIUS · BRANCH OFFICE</div>
+            Vacoas-Phoenix<br/>Republic of Mauritius<br/>
+            M: +230 5965 0810<br/>
+            E: mauritius@azeestravels.com
+          </td>
+        </tr>
+      </table>
+    </div>
+  `;
+
+  const editableNotice = whiteLabel ? `
+    <div style="background: #fff8dc; padding: 10pt; margin-bottom: 14pt; font-size: 9pt; color: #5a4a1f; border-left: 3pt solid ${accentColor};">
+      <strong>📝 EDITABLE TEMPLATE:</strong> Replace [bracketed placeholders] with your agency's details. Adjust pricing freely before forwarding to your client.
+    </div>
+  ` : '';
+
+  const body = `
+    ${header}
+    ${editableNotice}
+    <div style="font-size: 24pt; color: ${brandColor}; font-weight: 300; letter-spacing: 3pt; margin-bottom: 14pt;">QUOTATION</div>
+
+    <table style="width: 100%; margin-bottom: 18pt; font-size: 11pt;">
+      <tr>
+        <td style="vertical-align: top; padding: 6pt 14pt 6pt 0; width: 50%;">
+          <div style="font-size: 9pt; color: ${brandColor}; font-weight: bold; letter-spacing: 2pt; margin-bottom: 4pt;">PREPARED FOR</div>
+          ${whiteLabel ? '<strong>[CLIENT NAME]</strong><br/>[Client Email]<br/>[Client Phone]' : '<strong>' + escapeHtml(q.agentName || q.agentCompany || '[Agent Name]') + '</strong><br/>' + escapeHtml(q.agentCompany || '') + '<br/>' + escapeHtml(q.agentEmail || '')}
+        </td>
+        <td style="vertical-align: top; padding: 6pt 0 6pt 14pt; width: 50%; background: #f9f5f0;">
+          <div style="font-size: 9pt; color: ${brandColor}; font-weight: bold; letter-spacing: 2pt; margin-bottom: 4pt;">QUOTE DETAILS</div>
+          <strong>Date:</strong> ${new Date().toISOString().split('T')[0]}<br/>
+          <strong>Validity:</strong> 7 days<br/>
+          ${whiteLabel ? '<strong>Ref:</strong> [YOUR-REF-001]' : '<strong>Ref:</strong> AZ-' + (q.id || 'XXXX').slice(-6).toUpperCase()}
+        </td>
+      </tr>
+    </table>
+
+    <div style="font-size: 11pt; color: ${brandColor}; font-weight: bold; letter-spacing: 1.5pt; text-transform: uppercase; margin: 20pt 0 8pt 0; border-left: 3pt solid ${accentColor}; padding-left: 10pt;">Travel Package</div>
+    <table style="width: 100%; margin-bottom: 14pt; font-size: 11pt;">
+      <tr><td style="color:#666; padding: 3pt 0; width:140pt;"><strong>Destination:</strong></td><td>${escapeHtml(q.destination || '[Destination]')}</td></tr>
+      <tr><td style="color:#666; padding: 3pt 0;"><strong>Travel Dates:</strong></td><td>${escapeHtml(q.travelStart || '[Start]')} ${q.travelEnd ? 'to ' + escapeHtml(q.travelEnd) : ''}</td></tr>
+      <tr><td style="color:#666; padding: 3pt 0;"><strong>Duration:</strong></td><td>${q.nights || '[X]'} Nights</td></tr>
+      <tr><td style="color:#666; padding: 3pt 0;"><strong>Travellers:</strong></td><td>${q.paxAdults || '[X]'} Adults${q.paxChildren ? ' + ' + q.paxChildren + ' Children' : ''}</td></tr>
+      <tr><td style="color:#666; padding: 3pt 0;"><strong>Rooms:</strong></td><td>${escapeHtml(q.rooms || '[Room config]')}</td></tr>
+    </table>
+
+    ${hotelRows ? `
+      <div style="font-size: 11pt; color: ${brandColor}; font-weight: bold; letter-spacing: 1.5pt; text-transform: uppercase; margin: 20pt 0 8pt 0; border-left: 3pt solid ${accentColor}; padding-left: 10pt;">Accommodation</div>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 14pt; font-size: 10pt;">
+        <thead>
+          <tr>
+            <th style="background: ${brandColor}; color: white; padding: 8pt; text-align: left; border: 1pt solid ${brandColor};">Hotel</th>
+            <th style="background: ${brandColor}; color: white; padding: 8pt; border: 1pt solid ${brandColor};">Nights</th>
+            <th style="background: ${brandColor}; color: white; padding: 8pt; text-align: left; border: 1pt solid ${brandColor};">Meal Plan</th>
+            <th style="background: ${brandColor}; color: white; padding: 8pt; text-align: right; border: 1pt solid ${brandColor};">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>${hotelRows}</tbody>
+      </table>
+    ` : ''}
+
+    <div style="font-size: 11pt; color: ${brandColor}; font-weight: bold; letter-spacing: 1.5pt; text-transform: uppercase; margin: 20pt 0 8pt 0; border-left: 3pt solid ${accentColor}; padding-left: 10pt;">Investment</div>
+    <table style="width: 100%; margin-bottom: 14pt; font-size: 11pt;">
+      ${q.transportCost ? `<tr><td style="color:#666; padding: 4pt 0;">Private Transport</td><td style="text-align:right;">₹ ${Number(q.transportCost).toLocaleString('en-IN')}</td></tr>` : ''}
+      ${q.sightseeingCost ? `<tr><td style="color:#666; padding: 4pt 0;">Sightseeing</td><td style="text-align:right;">₹ ${Number(q.sightseeingCost).toLocaleString('en-IN')}</td></tr>` : ''}
+      ${q.miscCost ? `<tr><td style="color:#666; padding: 4pt 0;">Miscellaneous</td><td style="text-align:right;">₹ ${Number(q.miscCost).toLocaleString('en-IN')}</td></tr>` : ''}
+      <tr>
+        <td style="padding: 10pt; background: ${brandColor}; color: white; font-weight: bold; letter-spacing: 1.5pt; text-transform: uppercase;">TOTAL PACKAGE PRICE</td>
+        <td style="padding: 10pt; background: ${brandColor}; color: white; text-align: right; font-weight: bold; font-size: 14pt;">${totalFmt}</td>
+      </tr>
+    </table>
+
+    <div style="font-size: 11pt; color: ${brandColor}; font-weight: bold; letter-spacing: 1.5pt; text-transform: uppercase; margin: 20pt 0 8pt 0; border-left: 3pt solid ${accentColor}; padding-left: 10pt;">Terms & Conditions</div>
+    <p style="font-size: 10pt; line-height: 1.6;">Validity: 7 days from issue date. Rates subject to availability at booking. 50% advance to confirm. Cancellation charges as per industry policy.</p>
+
+    ${footer}
+  `;
+
+  const wordHTML = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8">
+<title>Quote ${escapeHtml(q.id)}</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
+<style>
+@page { size: A4 portrait; margin: 1.5cm; }
+body { font-family: 'Calibri', 'Helvetica Neue', Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #2a2a2a; margin: 0; padding: 0; }
+table { border-collapse: collapse; }
+</style></head>
+<body>${body}</body></html>`;
+
+  const blob = new Blob(['\ufeff', wordHTML], { type: 'application/msword;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const fname = whiteLabel ? 'quote-whitelabel' : 'quote-azees-' + (q.agentCompany || q.agentName || 'partner').replace(/[^a-z0-9]/gi, '-').toLowerCase();
+  a.download = fname + '.doc';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+  showFeedback(whiteLabel ? '✓ White-label Word downloaded' : '✓ Branded Word downloaded');
+}
+
+/* ================================================================
+   ▓▓▓▓▓▓▓▓▓▓ END B2B QUERY HUB ▓▓▓▓▓▓▓▓▓▓
+================================================================ */
+
+/* ================================================================
+   ▓▓▓▓▓▓▓▓▓▓ DASHBOARD ANALYTICS MODULE ▓▓▓▓▓▓▓▓▓▓
+================================================================ */
+
+let dashboardFilter = 'thisMonth';
+let dashCustomStart = '';
+let dashCustomEnd = '';
+
+function getDateRange(filter) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (filter === 'thisMonth') {
+    return {
+      start: new Date(now.getFullYear(), now.getMonth(), 1),
+      end: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59),
+      label: 'This Month'
+    };
+  }
+  if (filter === 'lastMonth') {
+    return {
+      start: new Date(now.getFullYear(), now.getMonth() - 1, 1),
+      end: new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59),
+      label: 'Last Month'
+    };
+  }
+  if (filter === 'thisYear') {
+    return {
+      start: new Date(now.getFullYear(), 0, 1),
+      end: new Date(now.getFullYear(), 11, 31, 23, 59, 59),
+      label: 'This Year (' + now.getFullYear() + ')'
+    };
+  }
+  if (filter === 'custom') {
+    return {
+      start: dashCustomStart ? new Date(dashCustomStart) : new Date(2000, 0, 1),
+      end: dashCustomEnd ? new Date(dashCustomEnd + 'T23:59:59') : new Date(2099, 11, 31),
+      label: 'Custom: ' + (dashCustomStart || '...') + ' to ' + (dashCustomEnd || '...')
+    };
+  }
+  if (filter === 'allTime') {
+    return { start: new Date(2000, 0, 1), end: new Date(2099, 11, 31), label: 'All Time' };
+  }
+  return { start: new Date(2000, 0, 1), end: new Date(2099, 11, 31), label: 'All Time' };
+}
+
+async function renderDashboard() {
+  const el = document.getElementById('builder');
+  const range = getDateRange(dashboardFilter);
+
+  // Load all data
+  const queries = await loadAllQueries();
+  const invoices = [];
+  const invKeys = await loadInvoiceList();
+  for (const k of invKeys) {
+    const inv = await loadInvoice(k);
+    if (inv) invoices.push(inv);
+  }
+  const itinKeys = await loadSavedList();
+  const itineraries = [];
+  for (const k of itinKeys) {
+    const itin = await loadItinerary(k);
+    if (itin) itineraries.push(itin);
+  }
+
+  // Filter by date range
+  const inRange = (isoString) => {
+    if (!isoString) return false;
+    const d = new Date(isoString);
+    return d >= range.start && d <= range.end;
+  };
+  const qInRange = queries.filter(q => inRange(q.createdAt));
+
+  // Calculate metrics
+  const totalReceived = qInRange.length;
+  const quoteSent = qInRange.filter(q => ['quote_sent', 'negotiating', 'confirmed', 'completed'].includes(q.status)).length;
+  const confirmed = qInRange.filter(q => ['confirmed', 'completed'].includes(q.status)).length;
+  const completed = qInRange.filter(q => q.status === 'completed').length;
+  const lost = qInRange.filter(q => q.status === 'lost').length;
+  const negotiating = qInRange.filter(q => q.status === 'negotiating').length;
+  const conversionRate = totalReceived > 0 ? ((confirmed / totalReceived) * 100).toFixed(1) : '0.0';
+  const quoteResponseRate = totalReceived > 0 ? ((quoteSent / totalReceived) * 100).toFixed(1) : '0.0';
+
+  // Revenue (sum of confirmed query expected values + invoiced amounts)
+  let totalRevenue = 0;
+  const currencyTotals = { INR: 0, USD: 0, EUR: 0, MUR: 0, MYR: 0 };
+  qInRange.filter(q => ['confirmed', 'completed'].includes(q.status)).forEach(q => {
+    const price = calculateTotalPrice(q);
+    if (q.targetCurrency && currencyTotals[q.targetCurrency] !== undefined) {
+      currencyTotals[q.targetCurrency] += price;
+    }
+    totalRevenue += price * (Number(q.fxRate) || 1);
+  });
+
+  // Response time avg (hours from received to quote_sent)
+  const responseTimes = qInRange.filter(q => q.respondedAt).map(q => {
+    return (new Date(q.respondedAt) - new Date(q.createdAt)) / (1000 * 60 * 60);
+  });
+  const avgResponseHours = responseTimes.length > 0
+    ? (responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length).toFixed(1)
+    : '—';
+
+  // Top destinations
+  const destCounts = {};
+  qInRange.forEach(q => {
+    const d = (q.destination || 'Unspecified').trim();
+    destCounts[d] = (destCounts[d] || 0) + 1;
+  });
+  const topDestinations = Object.entries(destCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  // Top agents
+  const agentCounts = {};
+  qInRange.forEach(q => {
+    const a = (q.agentCompany || q.agentName || 'Unknown').trim();
+    if (!agentCounts[a]) agentCounts[a] = { total: 0, confirmed: 0 };
+    agentCounts[a].total++;
+    if (['confirmed', 'completed'].includes(q.status)) agentCounts[a].confirmed++;
+  });
+  const topAgents = Object.entries(agentCounts).sort((a, b) => b[1].total - a[1].total).slice(0, 5);
+
+  // Lost reasons
+  const lostReasons = {};
+  qInRange.filter(q => q.status === 'lost' && q.lostReason).forEach(q => {
+    lostReasons[q.lostReason] = (lostReasons[q.lostReason] || 0) + 1;
+  });
+
+  el.innerHTML = `
+    <div class="builder-header">
+      <h1>Sales Dashboard</h1>
+      <p>${escapeHtml(range.label)} · Live conversion analytics</p>
+    </div>
+
+    <!-- Filter pills -->
+    <div class="section" style="margin-bottom: 14px;">
+      <div class="section-body" style="padding: 12px;">
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+          ${[
+            { key: 'thisMonth', label: 'This Month' },
+            { key: 'lastMonth', label: 'Last Month' },
+            { key: 'thisYear', label: 'This Year' },
+            { key: 'allTime', label: 'All Time' },
+            { key: 'custom', label: 'Custom Range' }
+          ].map(f => `
+            <button data-dash-filter="${f.key}" class="${dashboardFilter === f.key ? '' : 'nav-btn'}" style="padding: 7px 14px; font-size: 11px; letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase; font-weight: 600; border: 1px solid ${dashboardFilter === f.key ? 'var(--brand-magenta)' : 'var(--line)'}; background: ${dashboardFilter === f.key ? 'var(--brand-magenta)' : 'white'}; color: ${dashboardFilter === f.key ? 'white' : 'var(--ink-soft)'}; font-family: inherit;">
+              ${escapeHtml(f.label)}
+            </button>
+          `).join('')}
+        </div>
+        ${dashboardFilter === 'custom' ? `
+          <div class="row" style="margin-top: 10px;">
+            <div class="field"><label>From</label><input id="dash-startDate" type="date" value="${escapeAttr(dashCustomStart)}"/></div>
+            <div class="field"><label>To</label><input id="dash-endDate" type="date" value="${escapeAttr(dashCustomEnd)}"/></div>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 14px;">
+      ${renderKpiCard('📥 Queries Received', totalReceived, '', 'var(--brand-magenta)')}
+      ${renderKpiCard('📤 Quotes Sent', quoteSent, quoteResponseRate + '% response rate', '#9b3a85')}
+      ${renderKpiCard('💬 Negotiating', negotiating, 'in pipeline', 'var(--brand-gold)')}
+      ${renderKpiCard('✓ Confirmed', confirmed, conversionRate + '% conversion', '#27ae60')}
+      ${renderKpiCard('🎯 Completed', completed, 'tours done', '#2c3e50')}
+      ${renderKpiCard('✕ Lost', lost, totalReceived > 0 ? ((lost/totalReceived)*100).toFixed(1) + '% lost rate' : '', '#c0392b')}
+    </div>
+
+    <!-- Two-column row -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+      <!-- Conversion Funnel -->
+      <div class="section" style="margin: 0;">
+        <div class="section-head"><h2>📊 Conversion Funnel</h2></div>
+        <div class="section-body">
+          ${renderFunnelBar('Queries Received', totalReceived, totalReceived, 'var(--brand-magenta)')}
+          ${renderFunnelBar('Quotes Sent', quoteSent, totalReceived, '#9b3a85')}
+          ${renderFunnelBar('In Negotiation', negotiating, totalReceived, 'var(--brand-gold)')}
+          ${renderFunnelBar('Confirmed Bookings', confirmed, totalReceived, '#27ae60')}
+          ${renderFunnelBar('Completed Tours', completed, totalReceived, '#2c3e50')}
+        </div>
+      </div>
+      <!-- Revenue & Response -->
+      <div class="section" style="margin: 0;">
+        <div class="section-head"><h2>💰 Revenue & Performance</h2></div>
+        <div class="section-body">
+          <div style="background: linear-gradient(135deg, var(--brand-magenta), var(--brand-magenta-dark)); color: white; padding: 14px; margin-bottom: 10px;">
+            <div style="font-size: 9px; letter-spacing: 2px; opacity: 0.85;">CONFIRMED REVENUE</div>
+            <div style="font-size: 22px; font-weight: 700; margin-top: 4px;">₹ ${Math.round(totalRevenue).toLocaleString('en-IN')}</div>
+            <div style="font-size: 10px; opacity: 0.8; margin-top: 4px;">${confirmed} confirmed bookings</div>
+          </div>
+          ${Object.entries(currencyTotals).filter(([k, v]) => v > 0).map(([code, total]) => {
+            const cur = CURRENCIES[code];
+            return `<div style="font-size: 11px; padding: 4px 0; border-bottom: 1px dotted var(--line);">
+              <span style="color: var(--ink-muted);">${cur.code}:</span>
+              <span style="float: right; font-weight: 600; color: var(--ink);">${cur.symbol} ${total.toLocaleString(cur.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>`;
+          }).join('')}
+          <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 12px;">
+            <div style="display: flex; justify-content: space-between; padding: 3px 0;">
+              <span style="color: var(--ink-muted);">Avg response time:</span>
+              <span style="font-weight: 700; color: var(--brand-gold-dark);">${avgResponseHours === '—' ? '—' : avgResponseHours + ' hrs'}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 3px 0;">
+              <span style="color: var(--ink-muted);">Conversion rate:</span>
+              <span style="font-weight: 700; color: ${parseFloat(conversionRate) > 20 ? '#27ae60' : 'var(--brand-magenta)'};">${conversionRate}%</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 3px 0;">
+              <span style="color: var(--ink-muted);">Avg deal size:</span>
+              <span style="font-weight: 700;">${confirmed > 0 ? '₹ ' + Math.round(totalRevenue / confirmed).toLocaleString('en-IN') : '—'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top destinations + top agents -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+      <div class="section" style="margin: 0;">
+        <div class="section-head"><h2>🌍 Top Destinations</h2></div>
+        <div class="section-body">
+          ${topDestinations.length === 0 ? '<p style="color: var(--ink-muted); font-style: italic; font-size: 11px;">No data yet.</p>' :
+            topDestinations.map(([dest, count]) => `
+              <div style="padding: 6px 0; border-bottom: 1px dotted var(--line); display: flex; justify-content: space-between; font-size: 12px;">
+                <span>${escapeHtml(dest)}</span>
+                <span style="background: var(--brand-magenta-light); color: var(--brand-magenta); padding: 2px 10px; font-weight: 700; font-size: 11px;">${count}</span>
+              </div>
+            `).join('')
+          }
+        </div>
+      </div>
+      <div class="section" style="margin: 0;">
+        <div class="section-head"><h2>🤝 Top Agents/Partners</h2></div>
+        <div class="section-body">
+          ${topAgents.length === 0 ? '<p style="color: var(--ink-muted); font-style: italic; font-size: 11px;">No data yet.</p>' :
+            topAgents.map(([agent, data]) => `
+              <div style="padding: 6px 0; border-bottom: 1px dotted var(--line); display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(agent)}</span>
+                <span style="font-size: 10px;">
+                  <span style="background: var(--brand-gold-light); color: var(--brand-gold-dark); padding: 2px 8px; font-weight: 600;">${data.total} q</span>
+                  <span style="background: #d5f5e3; color: #27ae60; padding: 2px 8px; font-weight: 600; margin-left: 4px;">${data.confirmed} ✓</span>
+                </span>
+              </div>
+            `).join('')
+          }
+        </div>
+      </div>
+    </div>
+
+    ${Object.keys(lostReasons).length > 0 ? `
+    <div class="section" style="margin-bottom: 14px;">
+      <div class="section-head"><h2>❌ Why Quotes are Lost</h2></div>
+      <div class="section-body">
+        ${Object.entries(lostReasons).sort((a, b) => b[1] - a[1]).map(([reason, count]) => `
+          <div style="padding: 5px 0; display: flex; justify-content: space-between; font-size: 12px; border-bottom: 1px dotted var(--line);">
+            <span>${escapeHtml(reason)}</span>
+            <span style="background: #fadbd8; color: #c0392b; padding: 2px 8px; font-weight: 700;">${count}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    <div style="height: 40px;"></div>
+  `;
+
+  // Wire filter buttons
+  document.querySelectorAll('[data-dash-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      dashboardFilter = btn.dataset.dashFilter;
+      renderDashboard();
+    });
+  });
+  // Custom date range
+  const startEl = document.getElementById('dash-startDate');
+  const endEl = document.getElementById('dash-endDate');
+  if (startEl) startEl.addEventListener('change', () => { dashCustomStart = startEl.value; renderDashboard(); });
+  if (endEl) endEl.addEventListener('change', () => { dashCustomEnd = endEl.value; renderDashboard(); });
+}
+
+function renderKpiCard(label, value, sub, color) {
+  return `
+    <div style="background: white; padding: 14px; border-top: 3px solid ${color}; border-left: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);">
+      <div style="font-size: 9px; letter-spacing: 1.5px; color: var(--ink-muted); font-weight: 600; text-transform: uppercase;">${label}</div>
+      <div style="font-size: 26px; font-weight: 700; color: ${color}; margin-top: 4px; line-height: 1;">${value}</div>
+      ${sub ? `<div style="font-size: 10px; color: var(--ink-muted); margin-top: 4px;">${escapeHtml(sub)}</div>` : ''}
+    </div>
+  `;
+}
+
+function renderFunnelBar(label, value, total, color) {
+  const pct = total > 0 ? (value / total) * 100 : 0;
+  return `
+    <div style="margin-bottom: 8px;">
+      <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px;">
+        <span style="color: var(--ink-soft); font-weight: 600;">${label}</span>
+        <span style="font-weight: 700; color: ${color};">${value} <span style="color: var(--ink-muted); font-weight: 400;">(${pct.toFixed(0)}%)</span></span>
+      </div>
+      <div style="background: var(--bg); height: 8px; position: relative;">
+        <div style="background: ${color}; height: 100%; width: ${Math.max(2, pct)}%; transition: width 0.3s;"></div>
+      </div>
+    </div>
+  `;
+}
+
+/* ================================================================
+   ▓▓▓▓▓▓▓▓▓▓ END DASHBOARD MODULE ▓▓▓▓▓▓▓▓▓▓
+================================================================ */
+
+
+
+const LEAD_STORAGE_PREFIX = 'azees_lead:';
+const TPL_STORAGE_PREFIX = 'azees_template:';
+let leadState = createBlankLead();
+let activeLeadId = null;
+
+const PIPELINE_STAGES = [
+  { key: 'lead',       label: 'Lead',       color: '#7c236a', icon: '📥' },
+  { key: 'quote',      label: 'Quote Sent', color: '#9b3a85', icon: '📤' },
+  { key: 'confirmed',  label: 'Confirmed',  color: '#ba9c62', icon: '✓' },
+  { key: 'invoiced',   label: 'Invoiced',   color: '#d4a843', icon: '🧾' },
+  { key: 'travelling', label: 'Travelling', color: '#27ae60', icon: '✈️' },
+  { key: 'done',       label: 'Done',       color: '#2c3e50', icon: '🎯' },
+  { key: 'cancelled',  label: 'Cancelled',  color: '#999',    icon: '✕' }
+];
+
+function getStage(key) {
+  return PIPELINE_STAGES.find(s => s.key === key) || PIPELINE_STAGES[0];
+}
+
+function createBlankLead() {
+  return {
+    id: 'lead_' + Date.now(),
+    createdAt: new Date().toISOString(),
+    status: 'lead',
+    source: 'email',
+    agentName: '',
+    agentCompany: '',
+    agentCountry: '',
+    agentEmail: '',
+    agentPhone: '',
+    destination: '',
+    travelStart: '',
+    travelEnd: '',
+    nights: '',
+    paxAdults: '',
+    paxChildren: '',
+    budget: '',
+    budgetCurrency: 'INR',
+    requirements: '',
+    rawInquiry: '',
+    notes: '',
+    nextAction: '',
+    nextActionDate: '',
+    linkedQuoteId: '',
+    linkedInvoiceId: ''
+  };
+}
+
+/* ============ LEAD PARSER (heuristic email parsing) ============ */
+function parseInquiry(text) {
+  if (!text || !text.trim()) return null;
+  const extracted = {};
+  const t = text.replace(/\r/g, '').trim();
+  const lower = t.toLowerCase();
+
+  // Email
+  const emailMatch = t.match(/[\w.+-]+@[\w-]+\.[\w.-]+/);
+  if (emailMatch) extracted.agentEmail = emailMatch[0];
+
+  // Phone — match international and Indian formats
+  const phoneMatch = t.match(/(?:\+\d{1,3}[\s-]?)?(?:\(?\d{2,4}\)?[\s-]?)?\d{3,4}[\s-]?\d{3,4}[\s-]?\d{0,4}/);
+  if (phoneMatch && phoneMatch[0].replace(/\D/g, '').length >= 8) extracted.agentPhone = phoneMatch[0].trim();
+
+  // Destination keywords
+  const destinations = ['kashmir', 'srinagar', 'gulmarg', 'pahalgam', 'sonamarg', 'ladakh', 'leh', 'pangong', 'nubra', 'maldives', 'goa', 'kerala', 'rajasthan', 'manali', 'shimla', 'dubai', 'mauritius', 'bali', 'thailand', 'singapore'];
+  const destFound = destinations.filter(d => lower.includes(d));
+  if (destFound.length) extracted.destination = destFound.map(d => d.charAt(0).toUpperCase() + d.slice(1)).join(' + ');
+
+  // Nights / days
+  const nightsMatch = t.match(/(\d{1,2})\s*(?:nights?|n)(?:\s*\/?\s*(\d{1,2})\s*days?|d)?/i);
+  if (nightsMatch) extracted.nights = nightsMatch[1];
+
+  // Pax (adults / children / total)
+  const adultsMatch = t.match(/(\d{1,2})\s*(?:adults?|adt|pax)/i);
+  if (adultsMatch) extracted.paxAdults = adultsMatch[1];
+  const childrenMatch = t.match(/(\d{1,2})\s*(?:child|children|chd|kid)/i);
+  if (childrenMatch) extracted.paxChildren = childrenMatch[1];
+  // If only "X pax/people" found and no adults set
+  if (!extracted.paxAdults) {
+    const paxMatch = t.match(/(\d{1,2})\s*(?:pax|people|persons?|guests?)/i);
+    if (paxMatch) extracted.paxAdults = paxMatch[1];
+  }
+
+  // Budget — match common currency-prefixed amounts
+  const budgetMatch = t.match(/(?:budget|approx|around|about|₹|rs\.?|inr|usd|eur|\$|€)\s*[:\-]?\s*(\d[\d,]+)/i);
+  if (budgetMatch) {
+    extracted.budget = budgetMatch[1].replace(/,/g, '');
+    if (lower.includes('usd') || t.includes('$')) extracted.budgetCurrency = 'USD';
+    else if (lower.includes('eur') || t.includes('€')) extracted.budgetCurrency = 'EUR';
+    else if (lower.includes('mur')) extracted.budgetCurrency = 'MUR';
+  }
+
+  // Travel dates — basic date patterns
+  const dateMatch = t.match(/(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})|(?:on|from)\s+(\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*\d{0,4})/i);
+  if (dateMatch) extracted.travelStart = dateMatch[0].replace(/(on|from)\s+/i, '');
+
+  // Sender name — try to find "From:" or "regards, X" or "Best, X"
+  const fromMatch = t.match(/(?:from|sender)[:\s]+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/);
+  const regardsMatch = t.match(/(?:regards|thanks|best|sincerely|cheers)[,\s]+([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})/i);
+  if (fromMatch) extracted.agentName = fromMatch[1];
+  else if (regardsMatch) extracted.agentName = regardsMatch[1];
+
+  // Company name — common patterns
+  const companyMatch = t.match(/([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+){0,3})\s+(?:Travels?|Tours?|Holidays?|Agency|Pvt\.?\s*Ltd|LLC|Inc|GmbH|SARL)/);
+  if (companyMatch) extracted.agentCompany = companyMatch[0];
+
+  return extracted;
+}
+
+/* ============ LEAD STORAGE ============ */
+async function saveLead(lead) {
+  const key = LEAD_STORAGE_PREFIX + lead.id;
+  try {
+    await _storage.set(key, JSON.stringify(lead));
+    return true;
+  } catch (e) { alert('Save failed: ' + e.message); return false; }
+}
+async function loadLead(key) {
+  try { const r = await _storage.get(key); return r ? JSON.parse(r.value) : null; } catch (e) { return null; }
+}
+async function deleteLead(key) {
+  try { await _storage.delete(key); return true; } catch (e) { return false; }
+}
+async function loadAllLeads() {
+  try {
+    const r = await _storage.list(LEAD_STORAGE_PREFIX);
+    const keys = r?.keys || [];
+    const items = [];
+    for (const k of keys) {
+      const lead = await loadLead(k);
+      if (lead) items.push(lead);
+    }
+    return items;
+  } catch (e) { return []; }
+}
+
+/* ============ LEADS BUILDER UI ============ */
+function renderLeadsBuilder() {
+  const el = document.getElementById('builder');
+  const l = leadState;
+  el.innerHTML = `
+    <div class="builder-header">
+      <h1>${escapeHtml(l.agentName || l.agentCompany || 'New Lead')}</h1>
+      <p>Status: ${getStage(l.status).icon} ${getStage(l.status).label} ${l.destination ? '· ' + escapeHtml(l.destination) : ''}</p>
+    </div>
+
+    <!-- ===== PASTE EMAIL / WHATSAPP ===== -->
+    <div class="section">
+      <div class="section-head"><h2>① Paste Inquiry (Auto-parse)</h2></div>
+      <div class="section-body">
+        <p style="font-size: 11.5px; color: var(--brand-magenta); margin-bottom: 8px; font-weight: 600;">
+          💡 Paste an email or WhatsApp message below — click "Parse" and the portal extracts agent name, destination, pax, dates, budget automatically.
+        </p>
+        <div class="field"><label>Raw Inquiry Text</label>
+          <textarea id="lead-rawInquiry" rows="6" placeholder="Paste email or WhatsApp message here...">${escapeHtml(l.rawInquiry)}</textarea>
+        </div>
+        <button id="btn-parse-inquiry" class="add-day" style="background: var(--brand-magenta); color: white; margin-top: 8px;">⚡ Parse Inquiry → Fill Fields Below</button>
+      </div>
+    </div>
+
+    <!-- ===== STATUS & PIPELINE ===== -->
+    <div class="section">
+      <div class="section-head"><h2>② Pipeline Status</h2><span class="badge" style="background: ${getStage(l.status).color};">${getStage(l.status).icon} ${getStage(l.status).label}</span></div>
+      <div class="section-body">
+        <div class="row">
+          <div class="field"><label>Current Stage</label>
+            <select id="lead-status">
+              ${PIPELINE_STAGES.map(s => `<option value="${s.key}" ${l.status === s.key ? 'selected' : ''}>${s.icon} ${s.label}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>Lead Source</label>
+            <select id="lead-source">
+              <option value="email" ${l.source === 'email' ? 'selected' : ''}>📧 Email</option>
+              <option value="whatsapp" ${l.source === 'whatsapp' ? 'selected' : ''}>💬 WhatsApp</option>
+              <option value="phone" ${l.source === 'phone' ? 'selected' : ''}>📞 Phone call</option>
+              <option value="website" ${l.source === 'website' ? 'selected' : ''}>🌐 Website form</option>
+              <option value="referral" ${l.source === 'referral' ? 'selected' : ''}>👥 Referral</option>
+              <option value="other" ${l.source === 'other' ? 'selected' : ''}>📌 Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Next Action</label><input id="lead-nextAction" value="${escapeAttr(l.nextAction)}" placeholder="e.g. Send quote · Follow up · Check hotel availability"/></div>
+          <div class="field"><label>Action Date</label><input id="lead-nextActionDate" type="date" value="${escapeAttr(l.nextActionDate)}"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== AGENT DETAILS ===== -->
+    <div class="section">
+      <div class="section-head"><h2>③ Agent / Partner Details</h2></div>
+      <div class="section-body">
+        <div class="row">
+          <div class="field"><label>Contact Person Name</label><input id="lead-agentName" value="${escapeAttr(l.agentName)}" placeholder="e.g. Mr. Rajesh Sharma"/></div>
+          <div class="field"><label>Agency / Company</label><input id="lead-agentCompany" value="${escapeAttr(l.agentCompany)}" placeholder="e.g. Sharma Travels Pvt Ltd"/></div>
+        </div>
+        <div class="row row-3">
+          <div class="field"><label>Country</label><input id="lead-agentCountry" value="${escapeAttr(l.agentCountry)}" placeholder="India / Mauritius / UAE..."/></div>
+          <div class="field"><label>Email</label><input id="lead-agentEmail" value="${escapeAttr(l.agentEmail)}" placeholder="contact@agency.com"/></div>
+          <div class="field"><label>Phone / WhatsApp</label><input id="lead-agentPhone" value="${escapeAttr(l.agentPhone)}" placeholder="+91 / +230 / +971..."/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TRAVEL REQUIREMENTS ===== -->
+    <div class="section">
+      <div class="section-head"><h2>④ Travel Requirements</h2></div>
+      <div class="section-body">
+        <div class="row row-3">
+          <div class="field"><label>Destination(s)</label><input id="lead-destination" value="${escapeAttr(l.destination)}" placeholder="e.g. Kashmir + Ladakh"/></div>
+          <div class="field"><label>Travel Start</label><input id="lead-travelStart" type="date" value="${escapeAttr(l.travelStart)}"/></div>
+          <div class="field"><label>Travel End</label><input id="lead-travelEnd" type="date" value="${escapeAttr(l.travelEnd)}"/></div>
+        </div>
+        <div class="row row-3">
+          <div class="field"><label>Nights</label><input id="lead-nights" type="number" value="${escapeAttr(l.nights)}" placeholder="5"/></div>
+          <div class="field"><label>Adults</label><input id="lead-paxAdults" type="number" value="${escapeAttr(l.paxAdults)}" placeholder="2"/></div>
+          <div class="field"><label>Children</label><input id="lead-paxChildren" type="number" value="${escapeAttr(l.paxChildren)}" placeholder="0"/></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Budget</label><input id="lead-budget" type="number" value="${escapeAttr(l.budget)}" placeholder="0 if not stated"/></div>
+          <div class="field"><label>Budget Currency</label>
+            <select id="lead-budgetCurrency">
+              <option value="INR" ${l.budgetCurrency === 'INR' ? 'selected' : ''}>₹ INR</option>
+              <option value="USD" ${l.budgetCurrency === 'USD' ? 'selected' : ''}>$ USD</option>
+              <option value="EUR" ${l.budgetCurrency === 'EUR' ? 'selected' : ''}>€ EUR</option>
+              <option value="MUR" ${l.budgetCurrency === 'MUR' ? 'selected' : ''}>Rs MUR</option>
+              <option value="MYR" ${l.budgetCurrency === 'MYR' ? 'selected' : ''}>RM MYR</option>
+            </select>
+          </div>
+        </div>
+        <div class="row row-1">
+          <div class="field"><label>Special Requirements / Notes</label><textarea id="lead-requirements" rows="3" placeholder="Honeymoon · Veg meals · Need pickup from airport · etc.">${escapeHtml(l.requirements)}</textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== INTERNAL NOTES ===== -->
+    <div class="section">
+      <div class="section-head"><h2>⑤ Internal Notes (private)</h2></div>
+      <div class="section-body">
+        <div class="field"><label>Sales Notes</label><textarea id="lead-notes" rows="3" placeholder="Internal notes only — not shared with the agent">${escapeHtml(l.notes)}</textarea></div>
+      </div>
+    </div>
+
+    <!-- ===== CONVERT TO QUOTE ===== -->
+    <div class="section">
+      <div class="section-head"><h2>⑥ Convert to Quote / Invoice</h2></div>
+      <div class="section-body">
+        <p style="font-size: 11.5px; color: var(--ink-soft); margin-bottom: 12px;">
+          Quickly create a quote (itinerary) or invoice pre-filled with this lead's information.
+        </p>
+        <div style="display: flex; gap: 10px;">
+          <button id="btn-lead-to-quote" class="add-day" style="background: var(--brand-magenta); color: white; flex: 1;">📋 Create Itinerary from Lead</button>
+          <button id="btn-lead-to-invoice" class="add-day" style="background: var(--brand-gold); color: var(--ink); flex: 1;">🧾 Create Invoice from Lead</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="height: 40px;"></div>
+  `;
+  attachLeadListeners();
+}
+
+function attachLeadListeners() {
+  const fields = ['rawInquiry', 'status', 'source', 'nextAction', 'nextActionDate', 'agentName', 'agentCompany',
+    'agentCountry', 'agentEmail', 'agentPhone', 'destination', 'travelStart', 'travelEnd', 'nights',
+    'paxAdults', 'paxChildren', 'budget', 'budgetCurrency', 'requirements', 'notes'];
+  fields.forEach(key => {
+    const el = document.getElementById('lead-' + key);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      leadState[key] = el.value;
+      renderLeadPreview();
+    });
+    if (el.tagName === 'SELECT') {
+      el.addEventListener('change', () => {
+        leadState[key] = el.value;
+        renderLeadsBuilder();
+        renderLeadPreview();
+      });
+    }
+  });
+
+  const parseBtn = document.getElementById('btn-parse-inquiry');
+  if (parseBtn) parseBtn.addEventListener('click', () => {
+    if (!leadState.rawInquiry || !leadState.rawInquiry.trim()) {
+      alert('Paste an inquiry message first.');
+      return;
+    }
+    const extracted = parseInquiry(leadState.rawInquiry);
+    if (!extracted) { alert('Could not parse.'); return; }
+    let count = 0;
+    Object.keys(extracted).forEach(key => {
+      if (extracted[key] && !leadState[key]) {
+        leadState[key] = extracted[key];
+        count++;
+      }
+    });
+    renderLeadsBuilder();
+    renderLeadPreview();
+    showFeedback('✓ Parsed ' + count + ' field' + (count === 1 ? '' : 's'));
+  });
+
+  const toQuoteBtn = document.getElementById('btn-lead-to-quote');
+  if (toQuoteBtn) toQuoteBtn.addEventListener('click', () => convertLeadToItinerary());
+
+  const toInvBtn = document.getElementById('btn-lead-to-invoice');
+  if (toInvBtn) toInvBtn.addEventListener('click', () => convertLeadToInvoice());
+}
+
+function convertLeadToItinerary() {
+  // Clone lead data into a new itinerary
+  state = createBlankItinerary();
+  state.id = 'itin_' + Date.now();
+  state.agency = leadState.agentCompany || leadState.agentName;
+  state.contact = leadState.agentName;
+  state.destination = leadState.destination || 'Kashmir';
+  state.routeSummary = leadState.destination;
+  if (leadState.nights) state.nights = Number(leadState.nights);
+  if (leadState.nights) state.days = Number(leadState.nights) + 1;
+  state.notes = leadState.requirements ? 'Special requirements: ' + leadState.requirements : '';
+  state.title = (leadState.destination || 'Kashmir') + ' ' + (state.nights || '') + 'N/' + (state.days || '') + 'D — ' + (leadState.agentCompany || leadState.agentName || 'Untitled');
+
+  // Save linkage
+  leadState.linkedQuoteId = state.id;
+  leadState.status = 'quote';
+  saveLead(leadState);
+
+  switchModule('itinerary');
+  showFeedback('✓ Lead converted to itinerary — fill in days & save');
+}
+
+function convertLeadToInvoice() {
+  invoiceState = createBlankInvoice();
+  invoiceState.id = 'inv_' + Date.now();
+  invoiceState.clientType = 'B2B';
+  invoiceState.clientName = leadState.agentCompany || leadState.agentName;
+  invoiceState.clientAddress = '';
+  invoiceState.clientEmail = leadState.agentEmail;
+  invoiceState.clientPhone = leadState.agentPhone;
+  invoiceState.clientCountry = leadState.agentCountry;
+  invoiceState.destination = leadState.destination;
+  invoiceState.travelStart = leadState.travelStart;
+  invoiceState.travelEnd = leadState.travelEnd;
+  const totalPax = (Number(leadState.paxAdults) || 0) + (Number(leadState.paxChildren) || 0);
+  if (totalPax) invoiceState.paxCount = totalPax + ' Pax';
+  if (leadState.budgetCurrency) invoiceState.currency = leadState.budgetCurrency;
+  if (leadState.destination) {
+    invoiceState.items = [{
+      desc: (leadState.destination || 'Tour') + ' Package' + (leadState.nights ? ' — ' + leadState.nights + 'N' : ''),
+      qty: 1,
+      rate: leadState.budget || '',
+      amount: '0.00',
+      amountManual: false
+    }];
+  }
+
+  leadState.linkedInvoiceId = invoiceState.id;
+  leadState.status = 'invoiced';
+  saveLead(leadState);
+
+  switchModule('invoice');
+  showFeedback('✓ Lead converted to invoice');
+}
+
+function renderLeadPreview() {
+  const el = document.getElementById('preview-content');
+  el.className = 'preview-content email-mode';
+  const l = leadState;
+  const cur = CURRENCIES[l.budgetCurrency] || CURRENCIES.INR;
+  const stage = getStage(l.status);
+
+  let html = '<div class="email-output" style="padding: 24px 20px;">';
+  html += `<table style="width: 100%; margin-bottom: 12px;"><tr>
+    <td style="width: 64px;"><img src="${AZEES_LOGO}" alt="Azees" style="width: 54px; height: 54px;"/></td>
+    <td>
+      <div style="font-size: 18px; color: #7c236a; letter-spacing: 3px; font-weight: 300;">LEAD SUMMARY</div>
+      <div style="font-size: 9px; color: #ba9c62; letter-spacing: 2px; font-weight: 700; margin-top: 3px;">Internal Sales View · Not for Sharing</div>
+    </td>
+  </tr></table>`;
+
+  html += `<div style="background: ${stage.color}; color: white; padding: 8px 14px; margin-bottom: 14px; font-size: 11px; letter-spacing: 2px; font-weight: 700; text-transform: uppercase;">${stage.icon} STATUS: ${stage.label}</div>`;
+
+  html += `<table style="width: 100%; font-size: 12px; margin-bottom: 14px;">
+    <tr><td style="padding: 4px 0; color: #888; width: 130px;">Contact Person:</td><td style="font-weight: 600;">${escapeHtml(l.agentName || '—')}</td></tr>
+    <tr><td style="padding: 4px 0; color: #888;">Agency:</td><td style="font-weight: 600;">${escapeHtml(l.agentCompany || '—')}</td></tr>
+    <tr><td style="padding: 4px 0; color: #888;">Country:</td><td>${escapeHtml(l.agentCountry || '—')}</td></tr>
+    <tr><td style="padding: 4px 0; color: #888;">Email:</td><td style="color: #8e7547;">${escapeHtml(l.agentEmail || '—')}</td></tr>
+    <tr><td style="padding: 4px 0; color: #888;">Phone:</td><td style="color: #8e7547;">${escapeHtml(l.agentPhone || '—')}</td></tr>
+    <tr><td style="padding: 4px 0; color: #888;">Source:</td><td>${escapeHtml(l.source || '—')}</td></tr>
+  </table>`;
+
+  html += `<div style="background: #faf8f5; padding: 12px 14px; border-left: 3px solid #7c236a; margin-bottom: 14px;">
+    <div style="font-size: 10px; letter-spacing: 2px; color: #7c236a; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">TRAVEL DETAILS</div>
+    <table style="width: 100%; font-size: 11.5px;">
+      <tr><td style="padding: 2px 0; color: #888; width: 130px;">Destination:</td><td style="font-weight: 600;">${escapeHtml(l.destination || '—')}</td></tr>
+      <tr><td style="padding: 2px 0; color: #888;">Dates:</td><td>${escapeHtml(l.travelStart || '—')}${l.travelEnd ? ' → ' + escapeHtml(l.travelEnd) : ''}</td></tr>
+      <tr><td style="padding: 2px 0; color: #888;">Duration:</td><td>${l.nights ? escapeHtml(l.nights) + ' nights' : '—'}</td></tr>
+      <tr><td style="padding: 2px 0; color: #888;">Pax:</td><td>${l.paxAdults ? escapeHtml(l.paxAdults) + ' Adults' : ''}${l.paxChildren ? ' + ' + escapeHtml(l.paxChildren) + ' Children' : ''}${(!l.paxAdults && !l.paxChildren) ? '—' : ''}</td></tr>
+      <tr><td style="padding: 2px 0; color: #888;">Budget:</td><td style="font-weight: 600; color: #7c236a;">${l.budget ? cur.symbol + ' ' + Number(l.budget).toLocaleString() : '—'}</td></tr>
+    </table>
+  </div>`;
+
+  if (l.requirements) {
+    html += `<div style="background: #faf4e8; padding: 10px 14px; border-left: 3px solid #ba9c62; margin-bottom: 14px;">
+      <div style="font-size: 10px; letter-spacing: 2px; color: #8e7547; font-weight: 700; text-transform: uppercase; margin-bottom: 4px;">SPECIAL REQUIREMENTS</div>
+      <div style="font-size: 11.5px; color: #4a4a4a;">${escapeHtml(l.requirements).replace(/\n/g, '<br/>')}</div>
+    </div>`;
+  }
+
+  if (l.nextAction) {
+    html += `<div style="background: #f5e8f1; padding: 10px 14px; border-left: 3px solid #7c236a; margin-bottom: 14px;">
+      <div style="font-size: 10px; letter-spacing: 2px; color: #7c236a; font-weight: 700; text-transform: uppercase; margin-bottom: 4px;">⏰ NEXT ACTION</div>
+      <div style="font-size: 12px; color: #1a1a1a; font-weight: 600;">${escapeHtml(l.nextAction)}${l.nextActionDate ? ' <span style="color: #8e7547; font-weight: 400;">— by ' + escapeHtml(l.nextActionDate) + '</span>' : ''}</div>
+    </div>`;
+  }
+
+  if (l.notes) {
+    html += `<div style="padding: 10px 0; border-top: 1px solid #e8e3da; font-size: 11px; color: #6a6a6a; font-style: italic;">
+      <strong style="color: #7c236a;">Internal:</strong> ${escapeHtml(l.notes).replace(/\n/g, '<br/>')}
+    </div>`;
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+/* ============ PIPELINE VIEW (Kanban board) ============ */
+async function renderPipelineView() {
+  const el = document.getElementById('builder');
+  el.innerHTML = `
+    <div class="builder-header">
+      <h1>Sales Pipeline</h1>
+      <p>All leads, quotes & bookings · Drag-free kanban view</p>
+    </div>
+    <div id="pipeline-board" style="display: grid; grid-template-columns: repeat(${PIPELINE_STAGES.length}, minmax(220px, 1fr)); gap: 10px; overflow-x: auto; padding-bottom: 20px;">
+      <div class="loading">Loading pipeline...</div>
+    </div>
+  `;
+
+  // Gather all leads, itineraries, invoices and group by status
+  const leads = await loadAllLeads();
+  const itinKeys = await loadSavedList();
+  const itineraries = [];
+  for (const k of itinKeys) {
+    const itin = await loadItinerary(k);
+    if (itin) itineraries.push(itin);
+  }
+  const invKeys = await loadInvoiceList();
+  const invoices = [];
+  for (const k of invKeys) {
+    const inv = await loadInvoice(k);
+    if (inv) invoices.push(inv);
+  }
+
+  // Determine each lead's effective stage
+  const board = {};
+  PIPELINE_STAGES.forEach(s => board[s.key] = []);
+  leads.forEach(l => {
+    if (board[l.status]) board[l.status].push({ type: 'lead', data: l });
+  });
+  // Itineraries appear under "quote" stage if no lead is linked
+  itineraries.forEach(itin => {
+    const isLinked = leads.some(l => l.linkedQuoteId === itin.id);
+    if (!isLinked) board.quote.push({ type: 'itinerary', data: itin });
+  });
+  // Invoices appear under "invoiced" stage if no lead is linked
+  invoices.forEach(inv => {
+    const isLinked = leads.some(l => l.linkedInvoiceId === inv.id);
+    if (!isLinked) board.invoiced.push({ type: 'invoice', data: inv });
+  });
+
+  const boardEl = document.getElementById('pipeline-board');
+  boardEl.innerHTML = PIPELINE_STAGES.map(stage => {
+    const items = board[stage.key] || [];
+    return `
+      <div style="background: var(--bg); border-top: 3px solid ${stage.color}; min-height: 200px;">
+        <div style="padding: 10px 12px; background: white; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size: 11px; letter-spacing: 1.5px; color: ${stage.color}; font-weight: 700; text-transform: uppercase;">${stage.icon} ${stage.label}</div>
+          <div style="background: ${stage.color}; color: white; width: 22px; height: 22px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;">${items.length}</div>
+        </div>
+        <div style="padding: 8px;">
+          ${items.length === 0 ? '<div style="text-align: center; padding: 24px 8px; font-size: 11px; color: var(--ink-muted); font-style: italic;">No items</div>' : items.map(item => renderPipelineCard(item, stage)).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Click handlers
+  boardEl.querySelectorAll('[data-pip-lead]').forEach(card => {
+    card.addEventListener('click', async () => {
+      const key = card.dataset.pipLead;
+      const lead = await loadLead(key);
+      if (lead) {
+        leadState = lead;
+        activeLeadId = key;
+        switchModule('leads');
+      }
+    });
+  });
+  boardEl.querySelectorAll('[data-pip-itin]').forEach(card => {
+    card.addEventListener('click', async () => {
+      const key = card.dataset.pipItin;
+      const itin = await loadItinerary(key);
+      if (itin) {
+        state = itin;
+        activeItineraryId = key;
+        switchModule('itinerary');
+      }
+    });
+  });
+  boardEl.querySelectorAll('[data-pip-inv]').forEach(card => {
+    card.addEventListener('click', async () => {
+      const key = card.dataset.pipInv;
+      const inv = await loadInvoice(key);
+      if (inv) {
+        invoiceState = inv;
+        activeInvoiceId = key;
+        switchModule('invoice');
+      }
+    });
+  });
+}
+
+function renderPipelineCard(item, stage) {
+  if (item.type === 'lead') {
+    const l = item.data;
+    return `
+      <div data-pip-lead="${LEAD_STORAGE_PREFIX + l.id}" style="background: white; padding: 10px 12px; margin-bottom: 6px; border-left: 3px solid ${stage.color}; cursor: pointer; transition: all 0.15s;" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'">
+        <div style="font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 3px;">${escapeHtml(l.agentName || l.agentCompany || 'Unnamed')}</div>
+        ${l.agentCompany && l.agentName ? `<div style="font-size: 10px; color: var(--brand-gold-dark); margin-bottom: 4px;">${escapeHtml(l.agentCompany)}</div>` : ''}
+        <div style="font-size: 10.5px; color: var(--ink-soft);">${escapeHtml(l.destination || 'No destination')}</div>
+        ${l.nights || l.paxAdults ? `<div style="font-size: 10px; color: var(--ink-muted); margin-top: 2px;">${l.nights ? l.nights + 'N' : ''} ${l.paxAdults ? '· ' + l.paxAdults + 'pax' : ''}</div>` : ''}
+        ${l.nextAction ? `<div style="font-size: 9.5px; color: ${stage.color}; margin-top: 4px; padding-top: 4px; border-top: 1px dotted var(--line); font-weight: 600;">⏰ ${escapeHtml(l.nextAction)}</div>` : ''}
+      </div>
+    `;
+  }
+  if (item.type === 'itinerary') {
+    const itin = item.data;
+    return `
+      <div data-pip-itin="${STORAGE_PREFIX + itin.id}" style="background: white; padding: 10px 12px; margin-bottom: 6px; border-left: 3px solid ${stage.color}; cursor: pointer;">
+        <div style="font-size: 12px; font-weight: 700; color: var(--ink);">${escapeHtml(itin.title || 'Untitled')}</div>
+        <div style="font-size: 10.5px; color: var(--ink-soft); margin-top: 2px;">${escapeHtml(itin.agency || 'No agency')}</div>
+        <div style="font-size: 10px; color: var(--ink-muted); margin-top: 2px;">${itin.nights}N/${itin.days}D · ${escapeHtml(itin.destination || '')}</div>
+      </div>
+    `;
+  }
+  if (item.type === 'invoice') {
+    const inv = item.data;
+    const totals = calcInvoiceTotals(inv);
+    const cur = CURRENCIES[inv.currency] || CURRENCIES.INR;
+    return `
+      <div data-pip-inv="${INV_STORAGE_PREFIX + inv.id}" style="background: white; padding: 10px 12px; margin-bottom: 6px; border-left: 3px solid ${stage.color}; cursor: pointer;">
+        <div style="font-size: 12px; font-weight: 700; color: var(--ink);">${escapeHtml(inv.invoiceNo)}</div>
+        <div style="font-size: 10.5px; color: var(--ink-soft); margin-top: 2px;">${escapeHtml(inv.clientName || 'No client')}</div>
+        <div style="font-size: 11px; color: var(--brand-magenta); font-weight: 700; margin-top: 2px;">${cur.symbol} ${Math.round(totals.grandTotal).toLocaleString()}</div>
+      </div>
+    `;
+  }
+  return '';
+}
+
+/* ============ LEADS SIDEBAR LIST ============ */
+async function refreshLeadsList() {
+  const ul = document.getElementById('saved-list');
+  const leads = await loadAllLeads();
+  if (!leads.length) {
+    ul.innerHTML = '<li class="saved-empty">No leads yet. Create one to start tracking.</li>';
+    return;
+  }
+  leads.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  ul.innerHTML = leads.map(lead => {
+    const stage = getStage(lead.status);
+    return `
+      <li class="saved-item" data-lead-key="${LEAD_STORAGE_PREFIX + lead.id}" style="border-left-color: ${stage.color};">
+        <div class="saved-item-title">${escapeHtml(lead.agentName || lead.agentCompany || 'Unnamed')}</div>
+        <div class="saved-item-meta">${stage.icon} ${stage.label} · ${escapeHtml(lead.destination || 'No destination')}</div>
+        <button class="saved-item-delete" data-lead-del-key="${LEAD_STORAGE_PREFIX + lead.id}" title="Delete">✕</button>
+      </li>
+    `;
+  }).join('');
+
+  ul.querySelectorAll('.saved-item').forEach(li => {
+    li.addEventListener('click', async (e) => {
+      if (e.target.closest('.saved-item-delete')) return;
+      const key = li.dataset.leadKey;
+      const lead = await loadLead(key);
+      if (lead) {
+        leadState = lead;
+        activeLeadId = key;
+        renderLeadsBuilder();
+        renderLeadPreview();
+        showFeedback('✓ Loaded lead');
+      }
+    });
+  });
+  ul.querySelectorAll('[data-lead-del-key]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.leadDelKey;
+      if (confirm('Delete this lead permanently?')) {
+        await deleteLead(key);
+        await refreshLeadsList();
+        showFeedback('✓ Deleted');
+      }
+    });
+  });
+}
+
+/* ============ TEMPLATES (save/load itinerary as template) ============ */
+async function saveAsTemplate() {
+  if (currentModule !== 'itinerary' && currentModule !== 'invoice') {
+    alert('Templates can be saved only from Itinerary or Invoice modules.');
+    return;
+  }
+  const name = prompt('Template name (e.g. "Kashmir Classic 5N6D"):');
+  if (!name) return;
+  const tpl = {
+    id: 'tpl_' + Date.now(),
+    name: name,
+    type: currentModule,
+    createdAt: new Date().toISOString(),
+    data: currentModule === 'itinerary' ? JSON.parse(JSON.stringify(state)) : JSON.parse(JSON.stringify(invoiceState))
+  };
+  // Strip identifying info from templates (since they'll be cloned)
+  if (tpl.type === 'itinerary') {
+    tpl.data.agency = '';
+    tpl.data.contact = '';
+    tpl.data.quoteNo = '';
+    tpl.data.notes = '';
+  } else {
+    tpl.data.clientName = '';
+    tpl.data.clientAddress = '';
+    tpl.data.clientEmail = '';
+    tpl.data.clientPhone = '';
+    tpl.data.invoiceNo = '';
+  }
+  try {
+    await _storage.set(TPL_STORAGE_PREFIX + tpl.id, JSON.stringify(tpl));
+    showFeedback('✓ Saved as template: ' + name);
+    if (currentModule === 'itinerary' || currentModule === 'invoice') {
+      await refreshTemplatesList();
+    }
+  } catch (e) { alert('Save failed: ' + e.message); }
+}
+
+async function loadAllTemplates() {
+  try {
+    const r = await _storage.list(TPL_STORAGE_PREFIX);
+    const keys = r?.keys || [];
+    const items = [];
+    for (const k of keys) {
+      const raw = await _storage.get(k);
+      if (raw) items.push({ key: k, ...JSON.parse(raw.value) });
+    }
+    return items;
+  } catch (e) { return []; }
+}
+
+async function refreshTemplatesList() {
+  const el = document.getElementById('template-list');
+  if (!el) return;
+  // First show built-in templates (Kashmir Classic etc.), then user templates
+  let html = TEMPLATES.map((t, i) => `
+    <button class="template-btn" data-tpl="${i}">
+      <strong>${escapeHtml(t.name)}</strong>
+      <span>${escapeHtml(t.sub)}</span>
+    </button>
+  `).join('');
+
+  // User templates
+  const userTpls = await loadAllTemplates();
+  if (userTpls.length) {
+    html += `<div style="font-size: 9px; letter-spacing: 1.5px; color: var(--brand-magenta); font-weight: 700; text-transform: uppercase; margin: 12px 0 6px 0;">📝 Your Saved Templates</div>`;
+    userTpls.forEach(t => {
+      html += `
+        <button class="template-btn" data-user-tpl="${escapeAttr(t.key)}" style="position: relative;">
+          <strong>${escapeHtml(t.name)}</strong>
+          <span>${t.type === 'itinerary' ? '📋 Itinerary' : '🧾 Invoice'} template</span>
+          <span data-tpl-del="${escapeAttr(t.key)}" style="position: absolute; top: 4px; right: 4px; color: #c0392b; padding: 2px 6px; font-size: 11px;" title="Delete template">✕</span>
+        </button>
+      `;
+    });
+  }
+  el.innerHTML = html;
+
+  // Built-in templates
+  el.querySelectorAll('[data-tpl]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = parseInt(btn.dataset.tpl);
+      const tpl = TEMPLATES[i];
+      if (confirm('Load template "' + tpl.name + '"? Current data will be replaced.')) {
+        state = createBlankItinerary();
+        tpl.apply(state);
+        state.id = 'itin_' + Date.now();
+        activeItineraryId = null;
+        renderBuilder();
+        renderPreview();
+        showFeedback('✓ Template loaded');
+      }
+    });
+  });
+
+  // User templates click → load
+  el.querySelectorAll('[data-user-tpl]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      if (e.target.dataset.tplDel) return;
+      const key = btn.dataset.userTpl;
+      const raw = await _storage.get(key);
+      if (!raw) return;
+      const tpl = JSON.parse(raw.value);
+      if (!confirm('Load template "' + tpl.name + '"? Current data will be replaced.')) return;
+      if (tpl.type === 'itinerary') {
+        state = JSON.parse(JSON.stringify(tpl.data));
+        state.id = 'itin_' + Date.now();
+        activeItineraryId = null;
+        switchModule('itinerary');
+      } else {
+        invoiceState = JSON.parse(JSON.stringify(tpl.data));
+        invoiceState.id = 'inv_' + Date.now();
+        invoiceState.invoiceNo = 'INV-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*9000)+1000);
+        activeInvoiceId = null;
+        switchModule('invoice');
+      }
+      showFeedback('✓ Loaded: ' + tpl.name);
+    });
+  });
+
+  // Delete template
+  el.querySelectorAll('[data-tpl-del]').forEach(x => {
+    x.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const key = x.dataset.tplDel;
+      if (confirm('Delete this template permanently?')) {
+        await _storage.delete(key);
+        await refreshTemplatesList();
+        showFeedback('✓ Template deleted');
+      }
+    });
+  });
+}
+
+/* ================================================================
+   ▓▓▓▓▓▓▓▓▓▓ END LEADS / PIPELINE / TEMPLATES ▓▓▓▓▓▓▓▓▓▓
+================================================================ */
+
+
 
 const INV_STORAGE_PREFIX = 'azees_invoice:';
 let invoiceState = createBlankInvoice();
@@ -3095,25 +5361,62 @@ function switchModule(mod) {
   currentModule = mod;
   document.querySelectorAll('.mod-btn').forEach(b => b.classList.toggle('active', b.dataset.mod === mod));
 
+  const sidebarHeaders = document.querySelectorAll('.sidebar h3');
+  const quickTemplates = document.querySelector('.quick-templates');
+
   if (mod === 'itinerary') {
     renderBuilder();
     renderPreview();
+    refreshTemplatesList();
     refreshSavedList();
-    document.querySelector('.sidebar h3').textContent = '📋 Quick Templates';
-    document.querySelectorAll('.sidebar h3')[1].textContent = '💼 Saved Itineraries';
-    document.querySelector('.quick-templates').style.display = '';
-  } else {
+    sidebarHeaders[0].textContent = '📋 Quick Templates';
+    sidebarHeaders[1].textContent = '💼 Saved Itineraries';
+    quickTemplates.style.display = '';
+  } else if (mod === 'invoice') {
     renderInvoiceBuilder();
     renderInvoicePreview();
+    refreshTemplatesList();
     refreshInvoiceList();
-    document.querySelector('.sidebar h3').textContent = '🧾 Invoice Tools';
-    document.querySelectorAll('.sidebar h3')[1].textContent = '📑 Saved Invoices';
-    document.querySelector('.quick-templates').style.display = 'none';
+    sidebarHeaders[0].textContent = '📋 Quick Templates';
+    sidebarHeaders[1].textContent = '📑 Saved Invoices';
+    quickTemplates.style.display = '';
+  } else if (mod === 'leads') {
+    renderLeadsBuilder();
+    renderLeadPreview();
+    refreshLeadsList();
+    sidebarHeaders[0].textContent = '🚀 Lead Actions';
+    sidebarHeaders[1].textContent = '📥 All Leads';
+    quickTemplates.style.display = 'none';
+  } else if (mod === 'pipeline') {
+    renderPipelineView();
+    document.getElementById('preview-content').innerHTML = '<div style="padding: 24px; color: #aaa; text-align: center; font-size: 12px;">Click any card on the board to open it.</div>';
+    refreshLeadsList();
+    sidebarHeaders[0].textContent = '📊 Pipeline Tools';
+    sidebarHeaders[1].textContent = '📥 All Leads';
+    quickTemplates.style.display = 'none';
+  } else if (mod === 'queryhub') {
+    renderQueryHub();
+    renderQueryHubPreview();
+    refreshQueriesList();
+    sidebarHeaders[0].textContent = '📞 Query Tools';
+    sidebarHeaders[1].textContent = '📞 All Queries';
+    quickTemplates.style.display = 'none';
+  } else if (mod === 'dashboard') {
+    renderDashboard();
+    document.getElementById('preview-content').innerHTML = '<div style="padding: 24px; color: #aaa; text-align: center; font-size: 12px;">Dashboard view · No preview needed.</div>';
+    refreshQueriesList();
+    sidebarHeaders[0].textContent = '📈 Dashboard';
+    sidebarHeaders[1].textContent = '📞 All Queries';
+    quickTemplates.style.display = 'none';
   }
 }
 
 document.getElementById('mod-itinerary').addEventListener('click', () => switchModule('itinerary'));
 document.getElementById('mod-invoice').addEventListener('click', () => switchModule('invoice'));
+document.getElementById('mod-leads').addEventListener('click', () => switchModule('leads'));
+document.getElementById('mod-pipeline').addEventListener('click', () => switchModule('pipeline'));
+document.getElementById('mod-queryhub').addEventListener('click', () => switchModule('queryhub'));
+document.getElementById('mod-dashboard').addEventListener('click', () => switchModule('dashboard'));
 
 /* ================================================================
    ▓▓▓▓▓▓▓▓▓▓ END INVOICE MODULE ▓▓▓▓▓▓▓▓▓▓
@@ -3125,9 +5428,9 @@ document.getElementById('mod-invoice').addEventListener('click', () => switchMod
   const navLogo = document.getElementById('nav-logo-img');
   if (navLogo) navLogo.src = AZEES_LOGO;
 
-  renderTemplates();
   renderBuilder();
   renderPreview();
+  await refreshTemplatesList();
   await refreshSavedList();
 })();
 </script>
