@@ -1575,7 +1575,7 @@ function buildEmailHTML() {
   const formatPrice = (v) => v && !isNaN(v) ? Number(v).toLocaleString('en-IN') : '—';
 
   let html = '<div class="email-output">';
-  html += `<table style="width: 100%; margin-bottom: 4px;"><tr>
+  html += `<table style="width: 100%; margin-bottom: 18px; border-bottom: 2px solid #ba9c62; padding-bottom: 12px;"><tr>
     <td style="width: 70px; vertical-align: middle; padding-right: 14px;">
       <img src="${AZEES_LOGO}" alt="Azees Travels" style="width: 60px; height: 60px; display: block; object-fit: contain;"/>
     </td>
@@ -1583,7 +1583,6 @@ function buildEmailHTML() {
       <h2 class="brand" style="margin: 0;">AZEES TRAVELS</h2>
     </td>
   </tr></table>`;
-  html += `<div class="brand-sub">B2B Trade Partner Itinerary · Confidential</div>`;
 
   if (s.notes && s.notes.trim()) {
     html += `<div class="greeting">${escapeHtml(s.notes).replace(/\n/g, '<br/>')}</div>`;
@@ -1968,8 +1967,7 @@ function buildEmailHTMLForPDF() {
           <img src="${AZEES_LOGO}" alt="Azees Travels" style="width: 64px; height: 64px; display: block; object-fit: contain;"/>
         </td>
         <td style="vertical-align: middle;">
-          <div style="font-size: 20px; color: #7c236a; letter-spacing: 4px; font-weight: 300;">AZEES TRAVELS</div>
-          <div style="font-size: 9px; color: #ba9c62; letter-spacing: 2.5px; font-weight: 700; margin-top: 3px; text-transform: uppercase;">B2B Trade Partner Itinerary · Confidential</div>
+          <div style="font-size: 22px; color: #7c236a; letter-spacing: 4px; font-weight: 300;">AZEES TRAVELS</div>
         </td>
       </tr>
     </table>
